@@ -19,10 +19,15 @@ kind of enterprise. You can read the main features of the system below:
     * Availability
     * Appointments
 * Services and service providers organization.
+	* Organizations will be able to add all the services they provide including each service provider with working hours system.
 * Workflow and booking rules.
+	* Define cancellation or appointment confirmation time periods.
 * Google Calendar synchronization.
+	* Each appointment booked with site can be synced with google calender.
 * Email notifications system & Reminders.
+	* Define time intervals for sending out appointment confirmation, reminders or payment notifications.
 * Multiple Timezones Support.
+	* Set region specific time zone for front end displaying date and time.
 
 ### Installation
 
