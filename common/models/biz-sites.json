@@ -1,0 +1,42 @@
+{
+  "name": "BizSites",
+  "plural": "BizSites",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "bizId": {
+      "type": "string",
+      "id": true,
+      "defaultFn": "uuidv4"
+    },
+    "bizName": {
+      "type": "string"
+    },
+    "bizCategory": {
+      "type": "string"
+    },
+    "bizLogoUrl": {
+      "type": "string"
+    },
+    "bizAddress": {
+      "type": "object"
+    },
+    "bizMetaData": {
+      "type": "object"
+    },
+    "createdAt": {
+      "type": "date"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

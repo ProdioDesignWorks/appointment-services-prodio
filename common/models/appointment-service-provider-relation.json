@@ -1,0 +1,36 @@
+{
+  "name": "AppointmentServiceProviderRelation",
+  "plural": "AppointmentServiceProviderRelation",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+  	"appointmentServiceId": {
+      "type": "string",
+      "id": true,
+      "defaultFn": "uuidv4"
+    },
+    "bizId": {
+      "type": "string"
+    },
+    "appointmentId": {
+      "type": "string"
+    },
+    "serviceId": {
+      "type": "string"
+    },
+    "serviceProviderId": {
+      "type": "string"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

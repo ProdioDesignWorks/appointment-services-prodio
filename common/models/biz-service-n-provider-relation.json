@@ -1,0 +1,36 @@
+{
+  "name": "BizServiceNProviderRelation",
+  "plural": "BizServiceNProviderRelation",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+  	"bizServiceId": {
+      "type": "string",
+      "id": true,
+      "defaultFn": "uuidv4"
+    },
+    "bizId": {
+      "type": "string"
+    },
+    "serviceId": {
+      "type": "string"
+    },
+    "serviceProviderId": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "date"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
