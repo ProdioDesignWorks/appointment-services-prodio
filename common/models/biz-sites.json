@@ -15,7 +15,16 @@
     "bizName": {
       "type": "string"
     },
+    "bizOwnerName": {
+      "type": "string"
+    },
+    "bizOwnerEmail": {
+      "type": "string"
+    },
     "bizCategory": {
+      "type": "string"
+    },
+    "bizSiteId": {
       "type": "string"
     },
     "bizLogoUrl": {

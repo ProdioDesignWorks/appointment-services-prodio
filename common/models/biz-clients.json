@@ -12,6 +12,9 @@
       "id": true,
       "defaultFn": "uuidv4"
     },
+    "bizClientId":{
+      "type": "string"
+    },
     "firstName": {
       "type": "string"
     },

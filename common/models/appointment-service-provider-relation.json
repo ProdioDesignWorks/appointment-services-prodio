@@ -30,7 +30,28 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+  	"Biz": {
+      "type": "belongsTo",
+      "model": "BizSites",
+      "foreignKey": "bizId"
+    },
+    "Appointment": {
+      "type": "belongsTo",
+      "model": "BizAppointments",
+      "foreignKey": "appointmentId"
+    },
+    "Service": {
+      "type": "belongsTo",
+      "model": "BizServices",
+      "foreignKey": "serviceId"
+    },
+    "ServiceProvide": {
+      "type": "belongsTo",
+      "model": "BizServiceProviders",
+      "foreignKey": "serviceProviderId"
+    }
+  },
   "acls": [],
   "methods": {}
 }

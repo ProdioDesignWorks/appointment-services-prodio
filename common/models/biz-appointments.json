@@ -63,7 +63,13 @@
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+  	"Biz": {
+      "type": "belongsTo",
+      "model": "BizSites",
+      "foreignKey": "bizId"
+    }
+  },
   "acls": [],
   "methods": {}
 }

@@ -41,3 +41,21 @@ exports.clean = arr => clean(arr);
 exports.isArray = arr => isArray(arr);
 exports.isObject = obj => isObject(obj);
 exports.print = obj => console.log(obj);
+
+const isNull = function(val) {
+    if (typeof val === 'string') {
+        val = val.trim();
+    }
+    if (val === undefined || val === null || typeof val === 'undefined' || val === '' || val === 'undefined') {
+        return true;
+    }
+    return false;
+};
+exports.isNull = isNull;
+
+const convertObjectIdToString = function(objectID) {
+    return objectID.toString().substring(0,8);
+};
+
+exports.convertObjectIdToString = convertObjectIdToString;
+
