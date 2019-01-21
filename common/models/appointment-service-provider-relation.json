@@ -7,21 +7,27 @@
     "validateUpsert": true
   },
   "properties": {
-    "appointmentServiceId": {
+    "moduleASRId": {
       "type": "string",
       "id": true,
       "defaultFn": "uuidv4"
     },
-    "bizId": {
+    "bizSiteId": {
       "type": "string"
     },
     "appointmentId": {
       "type": "string"
     },
-    "serviceId": {
+    "bizServiceId": {
       "type": "string"
     },
-    "serviceProviderId": {
+    "moduleServiceId": {
+      "type": "string"
+    },
+    "bizServiceProviderId": {
+      "type": "string"
+    },
+    "moduleServiceProviderId": {
       "type": "string"
     },
     "isActive": {
@@ -34,7 +40,7 @@
     "Biz": {
       "type": "belongsTo",
       "model": "BizSites",
-      "foreignKey": "bizId"
+      "foreignKey": "bizSiteId"
     },
     "Appointment": {
       "type": "belongsTo",
@@ -44,12 +50,12 @@
     "Service": {
       "type": "belongsTo",
       "model": "BizServices",
-      "foreignKey": "serviceId"
+      "foreignKey": "moduleServiceId"
     },
     "ServiceProvide": {
       "type": "belongsTo",
       "model": "BizServiceProviders",
-      "foreignKey": "serviceProviderId"
+      "foreignKey": "moduleServiceProviderId"
     }
   },
   "acls": [],

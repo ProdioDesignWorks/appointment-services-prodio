@@ -12,16 +12,22 @@
       "id": true,
       "defaultFn": "uuidv4"
     },
-    "bizId": {
+    "bizSiteId": {
       "type": "string"
     },
     "appointmentDate": {
       "type": "string"
     },
-    "appointmentTime": {
+    "appointmentStartTime": {
       "type": "string"
     },
-    "appointmentDateTime": {
+    "appointmentEndTime": {
+      "type": "string"
+    },
+    "appointmentStartDateTime": {
+      "type": "date"
+    },
+    "appointmentEndDateTime": {
       "type": "date"
     },
     "totalAmount": {
@@ -67,7 +73,7 @@
     "Biz": {
       "type": "belongsTo",
       "model": "BizSites",
-      "foreignKey": "bizId"
+      "foreignKey": "bizSiteId"
     }
   },
   "acls": [],
