@@ -105,11 +105,15 @@ module.exports = function(Bizservices) {
                     expose: false
                 }));
     		}
-    	});
+    	}).catch(error=>{
+		    return cb(new HttpErrors.InternalServerError('Invalid site id', {
+	                expose: false
+	            }));	
+		});
     }
 
     function funCreateServiceSiteRelation(sysServiceId,moduleServiceId,sysSiteId,moduleSiteId){
-    	Bizserviceproviders.app.models.BizProviderSiteRelation.findOne({"where":{"moduleProviderId":moduleProviderId,"moduleSiteId":moduleSiteId}}).then(response=>{
+    	Bizservices.app.models.BizServiceSiteRelation.findOne({"where":{"moduleServiceId":moduleServiceId,"moduleSiteId":moduleSiteId}}).then(response=>{
     		if(isValidObject(response)){
     			response.updateAttributes({"isActive":true}).then(updatedInfo=>{
 
@@ -119,15 +123,15 @@ module.exports = function(Bizservices) {
 
     		}else{
     			let insertJson = {
-    				"bizProviderId":sysProviderId,
-    				"moduleProviderId":moduleProviderId,
+    				"bizServiceId":sysServiceId,
+    				"moduleServiceId":moduleServiceId,
     				"bizSiteId":sysSiteId,
     				"moduleSiteId": moduleSiteId,
     				"createdAt": new Date(),
     				"isActive": true
     			};
 
-    			Bizserviceproviders.app.models.BizProviderSiteRelation.create(insertJson).then(response=>{
+    			Bizservices.app.models.BizServiceSiteRelation.create(insertJson).then(response=>{
 
     			}).catch(error=>{
 		    		
@@ -143,29 +147,85 @@ module.exports = function(Bizservices) {
     Bizservices.remoteMethod(
         'listServices', {
             http: {  verb: 'post'  },
-            description: ["It will create appointment for the site."],
+            description: ["It will list active services for the site."],
             accepts: [
-                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } }
+                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } },
+                { arg: 'pageNo', type: 'string', required: false, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }
         }
     );
 
-    Bizservices.listServices = (businessSiteId, cb) => {
+    Bizservices.listServices = (businessSiteId,pageNo, cb) => {
+
+    	if(isNull(pageNo)){pageNo=0;}
+    	let limit = 10;
+
+    	let filterObject = {"where":{"bizSiteId":convertObjectIdToString(businessSiteId),"isActive":true},"include":[{relation:'Service'}]};
+
+		filterObject.skip = parseInt(pageNo) * parseInt(limit);
+		filterObject.limit = limit;
+
+    	Bizservices.app.models.BizServiceSiteRelation.find(filterObject).then(bizServices=>{
+    		cb(null,bizServices);
+    	}).catch(error=>{
+    		let _msg = isNull(error["message"]) ? 'Internal Server Error' : error["message"];
+            const err = new HttpErrors.InternalServerError(_msg, {
+                expose: false
+            });
+            return cb(err);
+    	});
     }
 
     Bizservices.remoteMethod(
-        'removeServices', {
+        'removeServicesFromSite', {
             http: {  verb: 'post'  },
             description: ["It will create appointment for the site."],
             accepts: [
+                { arg: 'businessServiceIds', type: 'array', required: true, http: { source: 'query' } }
                 { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }
         }
     );
 
-    Bizservices.listServices = (businessSiteId, cb) => {
+    Bizservices.removeServicesFromSite = (businessServiceIds,businessSiteId, cb) => {
+    	let servicesArr = String(businessServiceIds).split(",");
+    	let erroredRes = false; let errorMessage = "";
+
+    	async.each(servicesArr,function(businessServiceId,callbk){
+    		Bizservices.app.models.BizServiceSiteRelation.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId),"bizServiceId":convertObjectIdToString(businessServiceId)}}).then(providerSiteInfo=>{
+	    		if(isValidObject(providerSiteInfo)){
+	    			providerSiteInfo.updateAttributes({"isActive":false}).then(res=>{
+	    				cb(null,{"success":true});
+	    			}).catch(err=>{
+	    				erroredRes = true;
+	    				if(errorMessage!=""){errorMessage+=", ";}
+	    				errorMessage+=" Error while processing provider id - "+businessProviderId;
+	    				callbk();
+	    			});
+	    		}else{
+	    			erroredRes = true;
+	    			if(errorMessage!=""){errorMessage+=", ";}
+	    			errorMessage+=" Invalid provider id "+businessProviderId+" or invalid site id "+businessSiteId;
+	    			callbk();
+	    		}
+	    	}).catch(error=>{
+	    		erroredRes = true;
+	    		if(errorMessage!=""){errorMessage+=", ";}
+	    		errorMessage+=" Error while processing provider "+businessProviderId;
+	    		callbk();
+	    	});
+
+    	},function(){
+    		if(erroredRes){
+    			return cb(new HttpErrors.InternalServerError(errorMessage, {
+	                expose: false
+	            }));
+    		}else{
+    			return cb(null,{"success":true});
+    		}
+    	});
     }
 
 

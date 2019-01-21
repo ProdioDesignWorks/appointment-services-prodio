@@ -30,6 +30,20 @@ module.exports = function(Bizappointments) {
     );
 
     Bizappointments.createAppointment = (appointmentInfo,businessSiteId, cb) => {
+    	Bizservices.app.models.BizSites.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId)}}).then(businessInfo=>{
+    		if(isValidObject(businessInfo)){
+
+    		}else{
+    			return cb(new HttpErrors.InternalServerError('Invalid Site Id Or Site Info not found.', {
+                    expose: false
+                }));
+    		}
+    	}).catch(error=>{
+		    return cb(new HttpErrors.InternalServerError('Invalid site id', {
+	                expose: false
+	            }));	
+		});
+
     }
 
 
@@ -107,6 +121,21 @@ module.exports = function(Bizappointments) {
     );
 
     Bizappointments.confirmAppointment = (appointmentId, cb) => {
+    }
+
+
+    Bizappointments.remoteMethod(
+        'listAppointment', {
+            http: {  verb: 'post'  },
+            description: ["It will create appointment for the site."],
+            accepts: [
+                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } }
+            ],
+            returns: { type: 'object', root: true }
+        }
+    );
+
+    Bizappointments.listAppointment = (businessSiteId, cb) => {
     }
 
 

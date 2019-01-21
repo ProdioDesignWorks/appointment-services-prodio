@@ -152,14 +152,23 @@ module.exports = function(Bizclients) {
             http: {  verb: 'post'  },
             description: ["It will create appointment for the site."],
             accepts: [
-                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } }
+                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } },
+                { arg: 'pageNo', type: 'string', required: false, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }
         }
     );
 
-    Bizclients.listClients = (businessSiteId, cb) => {
-    	Bizclients.app.models.BizClientSiteRelation.find({"where":{"bizSiteId":businessSiteId,"isActive":true},"include":[{relation:'Client'}]}).then(bizClients=>{
+    Bizclients.listClients = (businessSiteId,pageNo, cb) => {
+    	if(isNull(pageNo)){pageNo=0;}
+    	let limit = 10;
+
+    	let filterObject = {"where":{"bizSiteId":convertObjectIdToString(businessSiteId),"isActive":true},"include":[{relation:'Client'}]};
+
+		filterObject.skip = parseInt(pageNo) * parseInt(limit);
+		filterObject.limit = limit;
+            
+    	Bizclients.app.models.BizClientSiteRelation.find(filterObject).then(bizClients=>{
     		cb(null,bizClients);
     	}).catch(error=>{
     		let _msg = isNull(error["message"]) ? 'Internal Server Error' : error["message"];
@@ -188,7 +197,7 @@ module.exports = function(Bizclients) {
     	let erroredRes = false; let errorMessage = "";
 
     	async.each(clientsArr,function(businessClientId,callbk){
-    		Bizclients.app.models.BizClientSiteRelation.findOne({"where":{"bizSiteId":businessSiteId,"bizClientId":businessClientId}}).then(clientSiteInfo=>{
+    		Bizclients.app.models.BizClientSiteRelation.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId),"bizClientId": convertObjectIdToString(businessClientId)}}).then(clientSiteInfo=>{
 	    		if(isValidObject(clientSiteInfo)){
 	    			clientSiteInfo.updateAttributes({"isActive":false}).then(res=>{
 	    				callbk();

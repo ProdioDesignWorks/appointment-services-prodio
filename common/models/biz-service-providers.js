@@ -101,7 +101,7 @@ module.exports = function(Bizserviceproviders) {
 		            return cb(err);
 		        });
     		}else{
-    			return cb(new HttpErrors.InternalServerError('Invalid Site Id', {
+    			return cb(new HttpErrors.InternalServerError('Invalid Site Id Or Site Info not found.', {
                     expose: false
                 }));
     		}
@@ -153,14 +153,23 @@ module.exports = function(Bizserviceproviders) {
             http: {  verb: 'post'  },
             description: ["It will create appointment for the site."],
             accepts: [
-                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } }
+                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } },
+                { arg: 'pageNo', type: 'string', required: false, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }
         }
     );
 
-    Bizserviceproviders.listServiceProviders = (businessSiteId, cb) => {
-    	Bizserviceproviders.app.models.BizProviderSiteRelation.find({"where":{"bizSiteId":businessSiteId,"isActive":true},"include":[{relation:'ServiceProvider'}]}).then(bizProviders=>{
+    Bizserviceproviders.listServiceProviders = (businessSiteId,pageNo, cb) => {
+    	if(isNull(pageNo)){pageNo=0;}
+    	let limit = 10;
+
+    	let filterObject = {"where":{"bizSiteId":convertObjectIdToString(businessSiteId),"isActive":true},"include":[{relation:'ServiceProvider'}]};
+
+		filterObject.skip = parseInt(pageNo) * parseInt(limit);
+		filterObject.limit = limit;
+
+    	Bizserviceproviders.app.models.BizProviderSiteRelation.find(filterObject).then(bizProviders=>{
     		cb(null,bizProviders);
     	}).catch(error=>{
     		let _msg = isNull(error["message"]) ? 'Internal Server Error' : error["message"];
@@ -190,7 +199,7 @@ module.exports = function(Bizserviceproviders) {
     	let erroredRes = false; let errorMessage = "";
 
     	async.each(providerArr,function(businessProviderId,callbk){
-    		Bizserviceproviders.app.models.BizProviderSiteRelation.findOne({"where":{"bizSiteId":businessSiteId,"bizProviderId":businessProviderId}}).then(providerSiteInfo=>{
+    		Bizserviceproviders.app.models.BizProviderSiteRelation.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId),"bizProviderId":convertObjectIdToString(businessProviderId)}}).then(providerSiteInfo=>{
 	    		if(isValidObject(providerSiteInfo)){
 	    			providerSiteInfo.updateAttributes({"isActive":false}).then(res=>{
 	    				cb(null,{"success":true});
