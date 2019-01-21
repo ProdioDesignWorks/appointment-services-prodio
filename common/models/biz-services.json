@@ -6,10 +6,13 @@
     "validateUpsert": true
   },
   "properties": {
-  	"serviceId": {
+    "moduleServiceId": {
       "type": "string",
       "id": true,
       "defaultFn": "uuidv4"
+    },
+    "bizServiceId": {
+      "type": "string"
     },
     "serviceName": {
       "type": "string"

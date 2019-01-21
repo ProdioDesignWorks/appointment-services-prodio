@@ -7,12 +7,12 @@
     "validateUpsert": true
   },
   "properties": {
-  	"serviceProviderId": {
+    "moduleServiceProviderId": {
       "type": "string",
       "id": true,
       "defaultFn": "uuidv4"
     },
-    "bizServiceProviderId":{
+    "bizServiceProviderId": {
       "type": "string"
     },
     "firstName": {

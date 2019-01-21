@@ -1,24 +1,27 @@
 {
-  "name": "BizServiceNProviderRelation",
-  "plural": "BizServiceNProviderRelation",
+  "name": "BizClientSiteRelation",
+  "plural": "BizClientSiteRelation",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
     "validateUpsert": true
   },
   "properties": {
-    "bizServiceId": {
+    "bizCSRId": {
       "type": "string",
       "id": true,
       "defaultFn": "uuidv4"
     },
-    "bizId": {
+    "bizClientId": {
       "type": "string"
     },
-    "serviceId": {
+    "moduleClientId": {
       "type": "string"
     },
-    "serviceProviderId": {
+    "bizSiteId": {
+      "type": "string"
+    },
+    "moduleSiteId": {
       "type": "string"
     },
     "createdAt": {
@@ -34,17 +37,12 @@
     "Biz": {
       "type": "belongsTo",
       "model": "BizSites",
-      "foreignKey": "bizId"
+      "foreignKey": "moduleSiteId"
     },
-    "Service": {
+    "Client": {
       "type": "belongsTo",
-      "model": "BizServices",
-      "foreignKey": "serviceId"
-    },
-    "ServiceProvide": {
-      "type": "belongsTo",
-      "model": "BizServiceProviders",
-      "foreignKey": "serviceProviderId"
+      "model": "BizClients",
+      "foreignKey": "moduleClientId"
     }
   },
   "acls": [],

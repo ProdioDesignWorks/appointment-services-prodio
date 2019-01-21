@@ -7,7 +7,7 @@
     "validateUpsert": true
   },
   "properties": {
-    "bizId": {
+    "moduleSiteId": {
       "type": "string",
       "id": true,
       "defaultFn": "uuidv4"

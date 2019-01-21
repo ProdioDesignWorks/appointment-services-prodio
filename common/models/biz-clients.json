@@ -7,12 +7,12 @@
     "validateUpsert": true
   },
   "properties": {
-  	"clientId": {
+    "moduleClientId": {
       "type": "string",
       "id": true,
       "defaultFn": "uuidv4"
     },
-    "bizClientId":{
+    "bizClientId": {
       "type": "string"
     },
     "firstName": {

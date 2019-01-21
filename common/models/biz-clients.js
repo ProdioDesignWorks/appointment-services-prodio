@@ -57,45 +57,170 @@ module.exports = function(Bizclients) {
 
     	let clientData = clientInfo;
 
-    	Bizclients.findOne(
-    		{ where: { "bizClientId": convertObjectIdToString(bizData["bizClientId"]) }}
-    	).then(bizUserInfo => {
-    		if (isValidObject(bizUserInfo)) {
-    			//Already exists
-    			clientData["bizClientId"] = bizUserInfo["bizClientId"];
-    			clientData["isActive"] = bizUserInfo["isActive"];
+    	Bizclients.app.models.BizSites.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId)}}).then(businessInfo=>{
+    		if(isValidObject(businessInfo)){
+    			Bizclients.findOne(
+		    		{ where: { "bizClientId": convertObjectIdToString(bizData["bizClientId"]) }}
+		    	).then(bizUserInfo => {
+		    		if (isValidObject(bizUserInfo)) {
+		    			//Already exists
+		    			clientData["bizClientId"] = bizUserInfo["bizClientId"];
+		    			clientData["isActive"] = bizUserInfo["isActive"];
 
-    			bizUserInfo.updateAttributes(clientData,function(err,respponse){
-                    if(err){
-                        return cb(new HttpErrors.InternalServerError('Internal Server Error '+JSON.stringify(err), {
-                            expose: false
-                        }));
-                    }else{
-                        cb(null,respponse);
-                    }
-                });
+		    			bizUserInfo.updateAttributes(clientData,function(err,respponse){
+		                    if(err){
+		                        return cb(new HttpErrors.InternalServerError('Internal Server Error '+JSON.stringify(err), {
+		                            expose: false
+		                        }));
+		                    }else{
+		                    	funCreateClientSiteRelation(clientData["bizClientId"],bizUserInfo["moduleClientId"],businessInfo["bizSiteId"],businessInfo["moduleSiteId"]);
+		                        cb(null,respponse);
+		                    }
+		                });
+		    		}else{
+		    			//create new
+		    			clientData["bizClientId"] = convertObjectIdToString(clientInfo["bizClientId"]);
+		    			clientData["isActive"] = true;
+		    			clientData["createdAt"] = new Date();
+
+		    			Bizclients.create(clientData).then(bizInfo=>{
+		                    funCreateClientSiteRelation(bizInfo["bizClientId"],bizInfo["moduleClientId"],businessInfo["bizSiteId"],businessInfo["moduleSiteId"]);
+		    				return cb(null,bizInfo);
+		    			})catch(err=>{
+		    				return cb(new HttpErrors.InternalServerError('Error while creating new client.', {
+			                    expose: false
+			                })); 
+		    			});
+		    		}
+		        }).catch(error => {
+		            let _msg = isNull(error["message"]) ? 'Internal Server Error' : error["message"];
+		            const err = new HttpErrors.InternalServerError(_msg, {
+		                expose: false
+		            });
+		            return cb(err);
+		        });
     		}else{
-    			//create new
-    			clientData["bizClientId"] = convertObjectIdToString(clientInfo["bizClientId"]);
-    			clientData["isActive"] = true;
-    			clientData["createdAt"] = new Date();
-
-    			Bizclients.create(clientData).then(bizInfo=>{
-    				return cb(null,bizInfo);
-    			})catch(err=>{
-    				return cb(new HttpErrors.InternalServerError('Error while creating new client.', {
-	                    expose: false
-	                })); 
-    			});
+    			return cb(new HttpErrors.InternalServerError('Invalid Site Id', {
+                    expose: false
+                }));
     		}
-        }).catch(error => {
-            let _msg = isNull(error["message"]) ? 'Internal Server Error' : error["message"];
+    	}).catch(error=>{
+    		let _msg = isNull(error["message"]) ? 'Internal Server Error' : error["message"];
             const err = new HttpErrors.InternalServerError(_msg, {
                 expose: false
             });
             return cb(err);
-        });
+    	})
+
+    	
     }
+
+    function funCreateClientSiteRelation(sysClientId,moduleClientId,sysSiteId,moduleSiteId){
+    	Bizclients.app.models.BizClientSiteRelation.findOne({"where":{"moduleClientId":moduleClientId,"moduleSiteId":moduleSiteId}}).then(response=>{
+    		if(isValidObject(response)){
+    			response.updateAttributes({"isActive":true}).then(updatedInfo=>{
+
+    			}).catch(error=>{
+		    		
+		    	});
+
+    		}else{
+    			let insertJson = {
+    				"bizClientId":sysClientId,
+    				"moduleClientId":moduleClientId,
+    				"bizSiteId":sysSiteId,
+    				"moduleSiteId": moduleSiteId,
+    				"createdAt": new Date(),
+    				"isActive": true
+    			};
+
+    			Bizclients.app.models.BizClientSiteRelation.create(insertJson).then(response=>{
+
+    			}).catch(error=>{
+		    		
+		    	});
+
+    		}
+    	}).catch(error=>{
+    		
+    	});
+    }
+
+
+    Bizclients.remoteMethod(
+        'listClients', {
+            http: {  verb: 'post'  },
+            description: ["It will create appointment for the site."],
+            accepts: [
+                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } }
+            ],
+            returns: { type: 'object', root: true }
+        }
+    );
+
+    Bizclients.listClients = (businessSiteId, cb) => {
+    	Bizclients.app.models.BizClientSiteRelation.find({"where":{"bizSiteId":businessSiteId,"isActive":true},"include":[{relation:'Client'}]}).then(bizClients=>{
+    		cb(null,bizClients);
+    	}).catch(error=>{
+    		let _msg = isNull(error["message"]) ? 'Internal Server Error' : error["message"];
+            const err = new HttpErrors.InternalServerError(_msg, {
+                expose: false
+            });
+            return cb(err);
+    	});
+    }
+
+
+    Bizclients.remoteMethod(
+        'removeClientFromSite', {
+            http: {  verb: 'post'  },
+            description: ["It will create appointment for the site."],
+            accepts: [
+                { arg: 'businessClientIds', type: 'array', required: true, http: { source: 'query' } }
+                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } }
+            ],
+            returns: { type: 'object', root: true }
+        }
+    );
+
+    Bizclients.removeClientFromSite = (businessClientIds,businessSiteId, cb) => {
+    	let clientsArr = String(businessClientIds).split(",");
+    	let erroredRes = false; let errorMessage = "";
+
+    	async.each(clientsArr,function(businessClientId,callbk){
+    		Bizclients.app.models.BizClientSiteRelation.findOne({"where":{"bizSiteId":businessSiteId,"bizClientId":businessClientId}}).then(clientSiteInfo=>{
+	    		if(isValidObject(clientSiteInfo)){
+	    			clientSiteInfo.updateAttributes({"isActive":false}).then(res=>{
+	    				callbk();
+	    			}).catch(err=>{
+	    				erroredRes = true;
+	    				if(errorMessage!=""){errorMessage+=", ";}
+	    				errorMessage+=" Error while processing "+businessClientId;
+	    				callbk();
+	    			});
+	    		}else{
+	    			erroredRes = true;
+	    			if(errorMessage!=""){errorMessage+=", ";}
+	    			errorMessage+=" Invalid client id "+businessClientId+" or invalid site id "+businessSiteId;
+	    			callbk();
+	    		}
+	    	}).catch(error=>{
+	    		erroredRes = true;
+	    		if(errorMessage!=""){errorMessage+=", ";}
+	    		errorMessage+=" Error while processing "+businessClientId;
+	    		callbk();
+	    	});
+    	},function(){
+    		if(erroredRes){
+    			return cb(new HttpErrors.InternalServerError(errorMessage, {
+	                expose: false
+	            }));
+    		}else{
+    			return cb(null,{"success":true});
+    		}
+    	});
+    }
+
 
 
 };
