@@ -78,18 +78,24 @@ module.exports = function(Bizappointments) {
 
     	appointmentInfo["isRescheduled"] = false;
     	appointmentInfo["isCancelled"] = false;
+    	appointmentInfo["isConfirmed"] = false;
     	appointmentInfo["isCompleted"] = false;
     	appointmentInfo["isDeleted"] = false;
-    	appointmentInfo["metaData"] = {};
+    	appointmentInfo["metaData"] = appointmentInfo["metaData"];
     	appointmentInfo["createdAt"] = new Date();
     	appointmentInfo["bizSiteId"] = convertObjectIdToString(businessSiteId);
 
+    	let apptServices =  appointmentInfo["services"];
+    	delete appointmentInfo["services"];
 
     	Bizservices.app.models.BizSites.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId)}}).then(businessInfo=>{
     		if(isValidObject(businessInfo)){
+
+    			appointmentInfo["moduleSiteId"] = businessInfo["moduleSiteId"];
+
     			Bizappointments.create(appointmentInfo).then(apptInfo=>{
 
-    				funUpdateServicesForAppointment(appointmentInfo["services"],apptInfo["appointmentId"]);
+    				funUpdateServicesForAppointment(apptServices,apptInfo["appointmentId"]);
     				cb(null,{"success":true,"appointmentId": apptInfo["appointmentId"] });
 
     			}).catch(error=>{
@@ -136,7 +142,11 @@ module.exports = function(Bizappointments) {
 						    callbk();
 						});
 				
+    				}).catch(error=>{
+    					callbk();
     				});
+    			}).catch(error=>{
+    				callbk();
     			});
 
 	    	},function(){
@@ -164,6 +174,43 @@ module.exports = function(Bizappointments) {
     );
 
     Bizappointments.editAppointment = (appointmentInfo,appointmentId, cb) => {
+    	Bizappointments.findById(appointmentId).then(appoinmentResponse=>{
+    		if(isValidObject(appoinmentResponse)){
+
+    			appointmentInfo["appointmentStartDateTime"] = funUpdateDateFormat(appointmentInfo["appointmentDate"],appointmentInfo["appointmentStartTime"]);
+		    	appointmentInfo["appointmentEndDateTime"] = funUpdateDateFormat(appointmentInfo["appointmentDate"],appointmentInfo["appointmentEndTime"]);
+
+		    	appointmentInfo["isRescheduled"] = false;
+		    	appointmentInfo["isCancelled"] = false;
+		    	appointmentInfo["isConfirmed"] = false;
+		    	appointmentInfo["isCompleted"] = false;
+		    	appointmentInfo["isDeleted"] = false;
+
+		    	appointmentInfo["bizSiteId"] = appoinmentResponse["bizSiteId"];
+		    	appointmentInfo["moduleSiteId"] = appoinmentResponse["moduleSiteId"];
+
+		    	let apptServices =  appointmentInfo["services"];
+    			delete appointmentInfo["services"];
+
+    			appoinmentResponse.updateAttributes(appointmentInfo).then(updateInfo=>{
+    				funUpdateServicesForAppointment(apptServices,appoinmentResponse["appointmentId"]);
+    				cb(null,{"success":true,"appointmentId": appoinmentResponse["appointmentId"] });
+    			}).catch(error=>{
+    				return cb(new HttpErrors.InternalServerError('Error while updating appointment.', {
+		                expose: false
+		        	}));
+    			});
+
+    		}else{
+    			return cb(new HttpErrors.InternalServerError('Invalid Appointment id', {
+	                expose: false
+	        	}));
+    		}
+    	}).catch(error=>{
+    		return cb(new HttpErrors.InternalServerError('Internal server error.', {
+	                expose: false
+	        	}));
+    	});
     }
 
 
@@ -180,6 +227,42 @@ module.exports = function(Bizappointments) {
     );
 
     Bizappointments.rescheduleAppointment = (appointmentInfo,appointmentId, cb) => {
+    	Bizappointments.findById(appointmentId).then(appoinmentResponse=>{
+    		if(isValidObject(appoinmentResponse)){
+
+    			appointmentInfo["appointmentStartDateTime"] = funUpdateDateFormat(appointmentInfo["appointmentDate"],appointmentInfo["appointmentStartTime"]);
+		    	appointmentInfo["appointmentEndDateTime"] = funUpdateDateFormat(appointmentInfo["appointmentDate"],appointmentInfo["appointmentEndTime"]);
+
+		    	appointmentInfo["isRescheduled"] = true;
+		    	appointmentInfo["isCancelled"] = false;
+		    	appointmentInfo["isConfirmed"] = false;
+		    	appointmentInfo["isCompleted"] = false;
+		    	appointmentInfo["isDeleted"] = false;
+
+		    	appointmentInfo["bizSiteId"] = appoinmentResponse["bizSiteId"];
+		    	appointmentInfo["moduleSiteId"] = appoinmentResponse["moduleSiteId"];
+
+		    	let apptServices =  appointmentInfo["services"];
+    			delete appointmentInfo["services"];
+
+    			appoinmentResponse.updateAttributes(appointmentInfo).then(updateInfo=>{
+    				cb(null,{"success":true,"appointmentId": appoinmentResponse["appointmentId"] });
+    			}).catch(error=>{
+    				return cb(new HttpErrors.InternalServerError('Error while updating appointment.', {
+		                expose: false
+		        	}));
+    			});
+
+    		}else{
+    			return cb(new HttpErrors.InternalServerError('Invalid Appointment id', {
+	                expose: false
+	        	}));
+    		}
+    	}).catch(error=>{
+    		return cb(new HttpErrors.InternalServerError('Internal server error.', {
+	                expose: false
+	        	}));
+    	});
     }
 
 
@@ -195,6 +278,29 @@ module.exports = function(Bizappointments) {
     );
 
     Bizappointments.cancelAppointment = (appointmentId, cb) => {
+    	Bizappointments.findById(appointmentId).then(appoinmentResponse=>{
+    		if(isValidObject(appoinmentResponse)){
+
+		    	appointmentInfo["isCancelled"] = true;
+
+    			appoinmentResponse.updateAttributes(appointmentInfo).then(updateInfo=>{
+    				cb(null,{"success":true,"appointmentId": appoinmentResponse["appointmentId"] });
+    			}).catch(error=>{
+    				return cb(new HttpErrors.InternalServerError('Error while updating appointment.', {
+		                expose: false
+		        	}));
+    			});
+
+    		}else{
+    			return cb(new HttpErrors.InternalServerError('Invalid Appointment id', {
+	                expose: false
+	        	}));
+    		}
+    	}).catch(error=>{
+    		return cb(new HttpErrors.InternalServerError('Internal server error.', {
+	                expose: false
+	        	}));
+    	});
     }
 
 
@@ -210,6 +316,29 @@ module.exports = function(Bizappointments) {
     );
 
     Bizappointments.deleteAppointment = (appointmentId, cb) => {
+    	Bizappointments.findById(appointmentId).then(appoinmentResponse=>{
+    		if(isValidObject(appoinmentResponse)){
+
+		    	appointmentInfo["isDeleted"] = false;
+
+    			appoinmentResponse.updateAttributes(appointmentInfo).then(updateInfo=>{
+    				cb(null,{"success":true,"appointmentId": appoinmentResponse["appointmentId"] });
+    			}).catch(error=>{
+    				return cb(new HttpErrors.InternalServerError('Error while updating appointment.', {
+		                expose: false
+		        	}));
+    			});
+
+    		}else{
+    			return cb(new HttpErrors.InternalServerError('Invalid Appointment id', {
+	                expose: false
+	        	}));
+    		}
+    	}).catch(error=>{
+    		return cb(new HttpErrors.InternalServerError('Internal server error.', {
+	                expose: false
+	        	}));
+    	});
     }
 
 
@@ -225,6 +354,29 @@ module.exports = function(Bizappointments) {
     );
 
     Bizappointments.confirmAppointment = (appointmentId, cb) => {
+    	Bizappointments.findById(appointmentId).then(appoinmentResponse=>{
+    		if(isValidObject(appoinmentResponse)){
+
+		    	appointmentInfo["isConfirmed"] = true;
+
+    			appoinmentResponse.updateAttributes(appointmentInfo).then(updateInfo=>{
+    				cb(null,{"success":true,"appointmentId": appoinmentResponse["appointmentId"] });
+    			}).catch(error=>{
+    				return cb(new HttpErrors.InternalServerError('Error while updating appointment.', {
+		                expose: false
+		        	}));
+    			});
+
+    		}else{
+    			return cb(new HttpErrors.InternalServerError('Invalid Appointment id', {
+	                expose: false
+	        	}));
+    		}
+    	}).catch(error=>{
+    		return cb(new HttpErrors.InternalServerError('Internal server error.', {
+	                expose: false
+	        	}));
+    	});
     }
 
 

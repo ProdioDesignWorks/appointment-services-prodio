@@ -15,6 +15,9 @@
     "bizSiteId": {
       "type": "string"
     },
+    "moduleSiteId": {
+      "type": "string"
+    },
     "appointmentDate": {
       "type": "string"
     },
@@ -42,8 +45,9 @@
     "paymentStatus": {
       "type": "string"
     },
-    "confirmationStatus": {
-      "type": "string"
+    "isConfirmed": {
+      "type": "boolean",
+      "default": false
     },
     "isRescheduled": {
       "type": "boolean",
@@ -73,7 +77,7 @@
     "Biz": {
       "type": "belongsTo",
       "model": "BizSites",
-      "foreignKey": "bizSiteId"
+      "foreignKey": "moduleSiteId"
     }
   },
   "acls": [],
