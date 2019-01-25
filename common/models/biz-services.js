@@ -24,14 +24,16 @@ module.exports = function(Bizservices) {
                 verb: 'post'
             },
             description: ["It will create service for the site."],
-            accepts: [{
+            accepts: [
+            {
                 arg: 'serviceInfo',
                 type: 'object',
                 required: true,
                 http: {
                     source: 'body'
-                },
-                {
+                }
+            },
+            {
                 arg: 'businessSiteId',
                 type: 'string',
                 required: true,
@@ -47,21 +49,15 @@ module.exports = function(Bizservices) {
     );
 
     Bizservices.addEditService = (serviceInfo,businessSiteId, cb) => {
-    	// {
-    	// 	"bizClientId":"",
-    	// 	"firstName":"",
-    	// 	"lastName":"",
-    	// 	"email":"",
-    	// 	"mobileNumber":"",
-    	// 	"metaData":{}
-    	// }
 
     	let clientData = serviceInfo;
 
     	Bizservices.app.models.BizSites.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId)}}).then(businessInfo=>{
+    		//businessInfo = JSON.parse(JSON.stringify(businessInfo));
+
     		if(isValidObject(businessInfo)){
     			Bizservices.findOne(
-		    		{ where: { "bizServiceId": convertObjectIdToString(bizData["bizServiceId"]) }}
+		    		{ where: { "bizServiceId": convertObjectIdToString(serviceInfo["bizServiceId"]) }}
 		    	).then(bizUserInfo => {
 		    		if (isValidObject(bizUserInfo)) {
 		    			//Already exists
@@ -81,13 +77,14 @@ module.exports = function(Bizservices) {
 		    		}else{
 		    			//create new
 		    			clientData["bizServiceId"] = convertObjectIdToString(serviceInfo["bizServiceId"]);
+		    			clientData["bizSiteId"] = convertObjectIdToString(serviceInfo["bizSiteId"]);
 		    			clientData["isActive"] = true;
 		    			clientData["createdAt"] = new Date();
 
 		    			Bizservices.create(clientData).then(bizInfo=>{
 		                    funCreateServiceSiteRelation(bizInfo["bizServiceId"],bizInfo["moduleServiceId"],businessInfo["bizSiteId"],businessInfo["moduleSiteId"]);
 		    				return cb(null,bizInfo);
-		    			})catch(err=>{
+		    			}).catch(err=>{
 		    				return cb(new HttpErrors.InternalServerError('Error while creating new services.', {
 			                    expose: false
 			                })); 
@@ -105,7 +102,8 @@ module.exports = function(Bizservices) {
                     expose: false
                 }));
     		}
-    	}).catch(error=>{
+    	})
+    	.catch(error=>{
 		    return cb(new HttpErrors.InternalServerError('Invalid site id', {
 	                expose: false
 	            }));	
@@ -182,7 +180,7 @@ module.exports = function(Bizservices) {
             http: {  verb: 'post'  },
             description: ["It will create appointment for the site."],
             accepts: [
-                { arg: 'businessServiceIds', type: 'array', required: true, http: { source: 'query' } }
+                { arg: 'businessServiceIds', type: 'array', required: true, http: { source: 'query' } },
                 { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }

@@ -39,23 +39,7 @@ module.exports = function(Bizsites) {
     );
 
     Bizsites.createUpdateBusinessSite = (bizData, cb) => {
-    	// {
-    	//  "bizSiteId":"",
-    	// 	"bizName":"",
-    	// 	"bizOwnerName":"",
-    	// 	"bizOwnerEmail":"",
-    	// 	"bizCategory":"",
-    	//  "bizCode":"",
-    	// 	"bizLogoUrl":"",
-    	// 	"bizAddress":{
-    	// 		"city":"",
-    	// 		"state":"",
-    	// 		"country":"",
-    	// 		"streetAddress":"",
-    	// 		"zipCode":""
-    	// 	},
-    	// 	"bizMetaData":{}
-    	// }
+    	
     	let businessData = bizData;
 
     	Bizsites.findOne(
@@ -83,7 +67,7 @@ module.exports = function(Bizsites) {
 
     			Bizsites.create(bizData).then(bizInfo=>{
     				return cb(null,bizInfo);
-    			})catch(err=>{
+    			}).catch(err=>{
     				return cb(new HttpErrors.InternalServerError('Error while creating new business.', {
 	                    expose: false
 	                })); 

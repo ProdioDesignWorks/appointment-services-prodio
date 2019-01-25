@@ -56,6 +56,7 @@ module.exports = function(Bizappointments) {
 
     Bizappointments.createAppointment = (appointmentInfo,businessSiteId, cb) => {
     	// {
+    	//  "businessClientId":"",	
     	// 	"appointmentDate":"",
     	// 	"appointmentStartTime":"",
     	// 	"appointmentEndTime":"",
@@ -93,16 +94,34 @@ module.exports = function(Bizappointments) {
 
     			appointmentInfo["moduleSiteId"] = businessInfo["moduleSiteId"];
 
-    			Bizappointments.create(appointmentInfo).then(apptInfo=>{
+    			Bizservices.app.models.BizClients.findOne({"where":{"bizClientId":convertObjectIdToString(appointmentInfo["businessClientId"])}}).then(clientInfo=>{
+    				if(isValidObject(clientInfo)){
 
-    				funUpdateServicesForAppointment(apptServices,apptInfo["appointmentId"]);
-    				cb(null,{"success":true,"appointmentId": apptInfo["appointmentId"] });
+	    				appointmentInfo["moduleClientId"] = clientInfo["moduleClientId"];
 
-    			}).catch(error=>{
-				    return cb(new HttpErrors.InternalServerError('Error while creating appointment.', {
-			                expose: false
-			        }));	
-				});
+	    				Bizappointments.create(appointmentInfo).then(apptInfo=>{
+
+		    				funUpdateServicesForAppointment(apptServices,apptInfo["appointmentId"]);
+		    				cb(null,{"success":true,"appointmentId": apptInfo["appointmentId"] });
+
+		    			}).catch(error=>{
+						    return cb(new HttpErrors.InternalServerError('Error while creating appointment.', {
+					                expose: false
+					        }));	
+						});
+		    		}else{
+		    			return cb(new HttpErrors.InternalServerError('Invalid Client Id', {
+				                expose: false
+				    	}));
+		    		}
+
+    			}).catch(err=>{
+    				return cb(new HttpErrors.InternalServerError('Error while fetching client.', {
+				                expose: false
+				    }));
+    			})
+
+    			
     		}else{
     			return cb(new HttpErrors.InternalServerError('Invalid Site Id Or Site Info not found.', {
                     expose: false
@@ -188,6 +207,7 @@ module.exports = function(Bizappointments) {
 
 		    	appointmentInfo["bizSiteId"] = appoinmentResponse["bizSiteId"];
 		    	appointmentInfo["moduleSiteId"] = appoinmentResponse["moduleSiteId"];
+		    	appointmentInfo["moduleClientId"] = appoinmentResponse["moduleClientId"];
 
 		    	let apptServices =  appointmentInfo["services"];
     			delete appointmentInfo["services"];
@@ -241,6 +261,7 @@ module.exports = function(Bizappointments) {
 
 		    	appointmentInfo["bizSiteId"] = appoinmentResponse["bizSiteId"];
 		    	appointmentInfo["moduleSiteId"] = appoinmentResponse["moduleSiteId"];
+		    	appointmentInfo["moduleClientId"] = appoinmentResponse["moduleClientId"];
 
 		    	let apptServices =  appointmentInfo["services"];
     			delete appointmentInfo["services"];
@@ -385,14 +406,94 @@ module.exports = function(Bizappointments) {
             http: {  verb: 'post'  },
             description: ["It will create appointment for the site."],
             accepts: [
-                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } }
+                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } },
+                { arg: 'businessClientId', type: 'string', required: false, http: { source: 'query' } },
+                { arg: 'pageNo', type: 'number', required: true, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }
         }
     );
 
-    Bizappointments.listAppointment = (businessSiteId, cb) => {
+    Bizappointments.listAppointment = (businessSiteId,businessClientId,pageNo, cb) => {
+
+    	let limit = 10;
+    	let whereClause = {"isCancelled":false,"isDeleted":false,"bizSiteId": convertObjectIdToString(businessSiteId) };
+    	if(!isNull(businessClientId)){
+    		whereClause["bizClientId"] = convertObjectIdToString(businessClientId);
+    	}
+    	let filterObject = {"where": whereClause ,
+    						"include":[
+    								{relation:'Biz'}, {relation:'Client'},
+    								{relation:'ApptServices',scope:{
+    									include:[{relation:'Service'},{relation:'ServiceProvide'}]
+    								}}
+    								],
+    						"order":"appointmentStartTime ASC"
+    					};
+
+    	filterObject.skip = parseInt(pageNo) * parseInt(limit);
+		filterObject.limit = limit;
+
+    	Bizappointments.find(filterObject).then(appointments=>{
+    		cb(null,appointments);
+    	}).catch(err=>{
+    		return cb(new HttpErrors.InternalServerError('Internal server error.', {
+	                expose: false
+	        }));
+    	});
     }
+
+
+    Bizappointments.remoteMethod(
+        'getAppointmentsCalender', {
+            http: {  verb: 'post'  },
+            description: ["It will create appointment for the site."],
+            accepts: [
+                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } },
+                { arg: 'appointmentStatus', type: 'string', description:'TODAY/PAST/COMPLETED/UPCOMING/CONFIRMED/UNCONFIRMED', required: false, http: { source: 'query' } },
+                { arg: 'filterCriteria', type: 'object', required: true, http: { source: 'body' } }
+            ],
+            returns: { type: 'object', root: true }
+        }
+    );
+
+    Bizappointments.getAppointmentsCalender = (businessSiteId,appointmentStatus,filterCriteria, cb) => {
+    	// {
+    	// 	"filterCriteria":{
+    	// 		"filterBy":"DAY / WEEK / MONTH",
+    	// 		"startDate":"MM-DD-YYYY",
+    	// 		"endDate":"MM-DD-YYYY"
+    	// 	}
+    	// }
+
+    	filterCriteria = filterCriteria["filterCriteria"];
+    	switch(filterCriteria["filterBy"].toUpperCase()){
+    		case "DAY":
+    		break;
+    		case "WEEK":
+    		break;
+    		case "MONTH":
+    		break;
+    	}
+
+    }
+
+
+    Bizappointments.remoteMethod(
+        'getServiceProviderCalender', {
+            http: {  verb: 'post'  },
+            description: ["It will create appointment for the site."],
+            accepts: [
+                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } },
+                { arg: 'filterCriteria', type: 'object', required: true, http: { source: 'body' } }
+            ],
+            returns: { type: 'object', root: true }
+        }
+    );
+
+    Bizappointments.getServiceProviderCalender = (businessSiteId,filterCriteria, cb) => {
+    }
+
 
     // 1. Get service based Not available time slots - day, week, month
     // 2. Get service provider based Not available time slots - day, week, month

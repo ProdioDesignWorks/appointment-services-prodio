@@ -18,6 +18,12 @@
     "moduleSiteId": {
       "type": "string"
     },
+    "businessClientId":{
+      "type": "string"
+    },
+    "moduleClientId":{
+      "type": "string"
+    },
     "appointmentDate": {
       "type": "string"
     },
@@ -78,6 +84,16 @@
       "type": "belongsTo",
       "model": "BizSites",
       "foreignKey": "moduleSiteId"
+    },
+    "Client": {
+      "type": "belongsTo",
+      "model": "BizClients",
+      "foreignKey": "moduleClientId"
+    },
+    "ApptServices": {
+      "type": "hasMany",
+      "model": "AppointmentServiceProviderRelation",
+      "foreignKey": "appointmentId"
     }
   },
   "acls": [],

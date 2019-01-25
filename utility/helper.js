@@ -1,6 +1,6 @@
 const uuid = require('uuid/v4');
 const isEmpty = require('lodash/isEmpty');
-const isNull = require('lodash/isNull');
+//const isNull = require('lodash/isNull');
 const isUndefined = require('lodash/isUndefined');
 const flatten = require('lodash/flatten');
 const compact = require('lodash/compact');

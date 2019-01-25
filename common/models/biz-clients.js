@@ -23,13 +23,15 @@ module.exports = function(Bizclients) {
                 verb: 'post'
             },
             description: ["It will create client for the site."],
-            accepts: [{
+            accepts: [
+            {
                 arg: 'clientInfo',
                 type: 'object',
                 required: true,
                 http: {
                     source: 'body'
-                },
+                }
+            },
                 {
                 arg: 'businessSiteId',
                 type: 'string',
@@ -60,7 +62,7 @@ module.exports = function(Bizclients) {
     	Bizclients.app.models.BizSites.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId)}}).then(businessInfo=>{
     		if(isValidObject(businessInfo)){
     			Bizclients.findOne(
-		    		{ where: { "bizClientId": convertObjectIdToString(bizData["bizClientId"]) }}
+		    		{ where: { "bizClientId": convertObjectIdToString(clientInfo["bizClientId"]) }}
 		    	).then(bizUserInfo => {
 		    		if (isValidObject(bizUserInfo)) {
 		    			//Already exists
@@ -80,13 +82,14 @@ module.exports = function(Bizclients) {
 		    		}else{
 		    			//create new
 		    			clientData["bizClientId"] = convertObjectIdToString(clientInfo["bizClientId"]);
+		    			clientData["bizSiteId"] = convertObjectIdToString(clientInfo["bizSiteId"]);
 		    			clientData["isActive"] = true;
 		    			clientData["createdAt"] = new Date();
 
 		    			Bizclients.create(clientData).then(bizInfo=>{
 		                    funCreateClientSiteRelation(bizInfo["bizClientId"],bizInfo["moduleClientId"],businessInfo["bizSiteId"],businessInfo["moduleSiteId"]);
 		    				return cb(null,bizInfo);
-		    			})catch(err=>{
+		    			}).catch(err=>{
 		    				return cb(new HttpErrors.InternalServerError('Error while creating new client.', {
 			                    expose: false
 			                })); 
@@ -185,7 +188,7 @@ module.exports = function(Bizclients) {
             http: {  verb: 'post'  },
             description: ["It will create appointment for the site."],
             accepts: [
-                { arg: 'businessClientIds', type: 'array', required: true, http: { source: 'query' } }
+                { arg: 'businessClientIds', type: 'array', required: true, http: { source: 'query' } },
                 { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }

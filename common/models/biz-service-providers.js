@@ -23,13 +23,15 @@ module.exports = function(Bizserviceproviders) {
                 verb: 'post'
             },
             description: ["It will create service provider for the site."],
-            accepts: [{
+            accepts: [
+            {
                 arg: 'serviceProviderInfo',
                 type: 'object',
                 required: true,
                 http: {
                     source: 'body'
-                },
+                }
+            },
                 {
                 arg: 'businessSiteId',
                 type: 'string',
@@ -46,21 +48,14 @@ module.exports = function(Bizserviceproviders) {
     );
 
     Bizserviceproviders.addEditServiceProvider = (serviceProviderInfo,businessSiteId, cb) => {
-    	// {
-    	// 	"bizServiceProviderId":"",
-    	// 	"firstName":"",
-    	// 	"lastName":"",
-    	// 	"email":"",
-    	// 	"mobileNumber":"",
-    	// 	"metaData":{}
-    	// }
+    	
 
     	let clientData = serviceProviderInfo;
     	Bizserviceproviders.app.models.BizSites.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId)}}).then(businessInfo=>{
     		if(isValidObject(businessInfo)){
 
     			Bizserviceproviders.findOne(
-		    		{ where: { "bizServiceProviderId": convertObjectIdToString(bizData["bizServiceProviderId"]) }}
+		    		{ where: { "bizServiceProviderId": convertObjectIdToString(serviceProviderInfo["bizServiceProviderId"]) }}
 		    	).then(bizUserInfo => {
 		    		if (isValidObject(bizUserInfo)) {
 		    			//Already exists
@@ -81,13 +76,14 @@ module.exports = function(Bizserviceproviders) {
 		    		}else{
 		    			//create new
 		    			clientData["bizServiceProviderId"] = convertObjectIdToString(serviceProviderInfo["bizServiceProviderId"]);
+		    			clientData["bizSiteId"] = convertObjectIdToString(serviceProviderInfo["bizSiteId"]);
 		    			clientData["isActive"] = true;
 		    			clientData["createdAt"] = new Date();
 
 		    			Bizserviceproviders.create(clientData).then(bizInfo=>{
 		    				funCreateProviderSiteRelation(bizInfo["bizServiceProviderId"],bizInfo["moduleServiceProviderId"],businessInfo["bizSiteId"],businessInfo["moduleSiteId"]);
 		    				return cb(null,bizInfo);
-		    			})catch(err=>{
+		    			}).catch(err=>{
 		    				return cb(new HttpErrors.InternalServerError('Error while creating new service provider.', {
 			                    expose: false
 			                })); 
@@ -186,7 +182,7 @@ module.exports = function(Bizserviceproviders) {
             http: {  verb: 'post'  },
             description: ["It will create appointment for the site."],
             accepts: [
-                { arg: 'businessProviderIds', type: 'array', required: true, http: { source: 'query' } }
+                { arg: 'businessProviderIds', type: 'array', required: true, http: { source: 'query' } },
                 { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }

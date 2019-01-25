@@ -23,7 +23,7 @@
   },
   "BizServices": {
     "dataSource": "db",
-    "public": false
+    "public": true
   },
   "BizServiceProviders": {
     "dataSource": "db",
