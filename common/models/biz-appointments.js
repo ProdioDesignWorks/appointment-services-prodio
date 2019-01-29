@@ -55,24 +55,7 @@ module.exports = function(Bizappointments) {
     }
 
     Bizappointments.createAppointment = (appointmentInfo,businessSiteId, cb) => {
-    	// {
-    	//  "businessClientId":"",	
-    	// 	"appointmentDate":"",
-    	// 	"appointmentStartTime":"",
-    	// 	"appointmentEndTime":"",
-    	// 	"totalAmount":"",
-    	// 	"amountPaid":"",
-    	// 	"amountDue":"",
-    	// 	"paymentStatus":"PENDING",
-    	// 	"confirmationStatus":"",
-    	//  "metaData":{},
-    	// 	"services":[
-    	// 		{
-    	// 			"serviceId":"",
-    	// 			"serviceProviderId":""
-    	// 		}
-    	// 	]
-    	// }
+    	
 
     	appointmentInfo["appointmentStartDateTime"] = funUpdateDateFormat(appointmentInfo["appointmentDate"],appointmentInfo["appointmentStartTime"]);
     	appointmentInfo["appointmentEndDateTime"] = funUpdateDateFormat(appointmentInfo["appointmentDate"],appointmentInfo["appointmentEndTime"]);
@@ -402,7 +385,7 @@ module.exports = function(Bizappointments) {
 
 
     Bizappointments.remoteMethod(
-        'listAppointment', {
+        'listAppointments', {
             http: {  verb: 'post'  },
             description: ["It will create appointment for the site."],
             accepts: [
@@ -414,7 +397,7 @@ module.exports = function(Bizappointments) {
         }
     );
 
-    Bizappointments.listAppointment = (businessSiteId,businessClientId,pageNo, cb) => {
+    Bizappointments.listAppointments = (businessSiteId,businessClientId,pageNo, cb) => {
 
     	let limit = 10;
     	let whereClause = {"isCancelled":false,"isDeleted":false,"bizSiteId": convertObjectIdToString(businessSiteId) };
@@ -450,7 +433,6 @@ module.exports = function(Bizappointments) {
             description: ["It will create appointment for the site."],
             accepts: [
                 { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } },
-                { arg: 'appointmentStatus', type: 'string', description:'TODAY/PAST/COMPLETED/UPCOMING/CONFIRMED/UNCONFIRMED', required: false, http: { source: 'query' } },
                 { arg: 'filterCriteria', type: 'object', required: true, http: { source: 'body' } }
             ],
             returns: { type: 'object', root: true }
@@ -460,6 +442,7 @@ module.exports = function(Bizappointments) {
     Bizappointments.getAppointmentsCalender = (businessSiteId,appointmentStatus,filterCriteria, cb) => {
     	// {
     	// 	"filterCriteria":{
+    	//      "appointmentStatus":"TODAY/PAST/COMPLETED/UPCOMING/CONFIRMED/UNCONFIRMED",	
     	// 		"filterBy":"DAY / WEEK / MONTH",
     	// 		"startDate":"MM-DD-YYYY",
     	// 		"endDate":"MM-DD-YYYY"
@@ -476,6 +459,9 @@ module.exports = function(Bizappointments) {
     		break;
     	}
 
+    	//TODO :  IMPMLEMENTATION
+    	cb(null,{"success":true});
+
     }
 
 
@@ -485,13 +471,16 @@ module.exports = function(Bizappointments) {
             description: ["It will create appointment for the site."],
             accepts: [
                 { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } },
+                { arg: 'businessServiceProviderId', type: 'string', required: true, http: { source: 'query' } },
                 { arg: 'filterCriteria', type: 'object', required: true, http: { source: 'body' } }
             ],
             returns: { type: 'object', root: true }
         }
     );
 
-    Bizappointments.getServiceProviderCalender = (businessSiteId,filterCriteria, cb) => {
+    Bizappointments.getServiceProviderCalender = (businessSiteId,businessServiceProviderId,filterCriteria, cb) => {
+    	//TODO :  IMPMLEMENTATION
+    	cb(null,{"success":true});
     }
 
 
