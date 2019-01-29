@@ -1,0 +1,101 @@
+{
+  "name": "BizAppointments",
+  "plural": "BizAppointments",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "appointmentId": {
+      "type": "string",
+      "id": true,
+      "defaultFn": "uuidv4"
+    },
+    "bizSiteId": {
+      "type": "string"
+    },
+    "moduleSiteId": {
+      "type": "string"
+    },
+    "businessClientId":{
+      "type": "string"
+    },
+    "moduleClientId":{
+      "type": "string"
+    },
+    "appointmentDate": {
+      "type": "string"
+    },
+    "appointmentStartTime": {
+      "type": "string"
+    },
+    "appointmentEndTime": {
+      "type": "string"
+    },
+    "appointmentStartDateTime": {
+      "type": "date"
+    },
+    "appointmentEndDateTime": {
+      "type": "date"
+    },
+    "totalAmount": {
+      "type": "number"
+    },
+    "amountPaid": {
+      "type": "number"
+    },
+    "amountDue": {
+      "type": "number"
+    },
+    "paymentStatus": {
+      "type": "string"
+    },
+    "isConfirmed": {
+      "type": "boolean",
+      "default": false
+    },
+    "isRescheduled": {
+      "type": "boolean",
+      "default": false
+    },
+    "isCancelled": {
+      "type": "boolean",
+      "default": false
+    },
+    "isCompleted": {
+      "type": "boolean",
+      "default": false
+    },
+    "metaData": {
+      "type": "object"
+    },
+    "createdAt": {
+      "type": "date"
+    },
+    "isDeleted": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "validations": [],
+  "relations": {
+    "Biz": {
+      "type": "belongsTo",
+      "model": "BizSites",
+      "foreignKey": "moduleSiteId"
+    },
+    "Client": {
+      "type": "belongsTo",
+      "model": "BizClients",
+      "foreignKey": "moduleClientId"
+    },
+    "ApptServices": {
+      "type": "hasMany",
+      "model": "AppointmentServiceProviderRelation",
+      "foreignKey": "appointmentId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

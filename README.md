@@ -40,6 +40,10 @@ kind of enterprise. You can read the main features of the system below:
 
 * Edit Appointment
 
+* List Appointments
+
+* Search/Filter Appointments
+
 * TimeSlot Settings
 
 

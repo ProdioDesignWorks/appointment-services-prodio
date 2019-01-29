@@ -1,0 +1,63 @@
+{
+  "name": "AppointmentServiceProviderRelation",
+  "plural": "AppointmentServiceProviderRelation",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "moduleASRId": {
+      "type": "string",
+      "id": true,
+      "defaultFn": "uuidv4"
+    },
+    "bizSiteId": {
+      "type": "string"
+    },
+    "appointmentId": {
+      "type": "string"
+    },
+    "bizServiceId": {
+      "type": "string"
+    },
+    "moduleServiceId": {
+      "type": "string"
+    },
+    "bizServiceProviderId": {
+      "type": "string"
+    },
+    "moduleServiceProviderId": {
+      "type": "string"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "Biz": {
+      "type": "belongsTo",
+      "model": "BizSites",
+      "foreignKey": "bizSiteId"
+    },
+    "Appointment": {
+      "type": "belongsTo",
+      "model": "BizAppointments",
+      "foreignKey": "appointmentId"
+    },
+    "Service": {
+      "type": "belongsTo",
+      "model": "BizServices",
+      "foreignKey": "moduleServiceId"
+    },
+    "ServiceProvide": {
+      "type": "belongsTo",
+      "model": "BizServiceProviders",
+      "foreignKey": "moduleServiceProviderId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

@@ -1,0 +1,45 @@
+{
+  "name": "BizServices",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "moduleServiceId": {
+      "type": "string",
+      "id": true,
+      "defaultFn": "uuidv4"
+    },
+    "bizServiceId": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "serviceDescription": {
+      "type": "string"
+    },
+    "serviceDuration": {
+      "type": "string"
+    },
+    "serviceFees": {
+      "type": "string"
+    },
+    "serviceImages": {
+      "type": [
+        "string"
+      ]
+    },
+    "createdAt": {
+      "type": "date"
+    },
+    "isActive": {
+      "type": "boolean"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

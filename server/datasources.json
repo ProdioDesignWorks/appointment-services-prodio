@@ -1,0 +1,1 @@
+{"db":{"host":"localhost","port":27017,"url":false,"database":"eazy_appointments","password":"","name":"db","user":"","connector":"mongodb","useNewUrlParser":true}}

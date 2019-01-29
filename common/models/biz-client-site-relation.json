@@ -1,0 +1,50 @@
+{
+  "name": "BizClientSiteRelation",
+  "plural": "BizClientSiteRelation",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "bizCSRId": {
+      "type": "string",
+      "id": true,
+      "defaultFn": "uuidv4"
+    },
+    "bizClientId": {
+      "type": "string"
+    },
+    "moduleClientId": {
+      "type": "string"
+    },
+    "bizSiteId": {
+      "type": "string"
+    },
+    "moduleSiteId": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "date"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "Biz": {
+      "type": "belongsTo",
+      "model": "BizSites",
+      "foreignKey": "moduleSiteId"
+    },
+    "Client": {
+      "type": "belongsTo",
+      "model": "BizClients",
+      "foreignKey": "moduleClientId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}
