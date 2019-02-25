@@ -15,6 +15,9 @@
     "bizSiteId": {
       "type": "string"
     },
+    "moduleSiteId":{
+      "type": "string"
+    },
     "appointmentId": {
       "type": "string"
     },
@@ -40,7 +43,7 @@
     "Biz": {
       "type": "belongsTo",
       "model": "BizSites",
-      "foreignKey": "bizSiteId"
+      "foreignKey": "moduleSiteId"
     },
     "Appointment": {
       "type": "belongsTo",
@@ -52,7 +55,7 @@
       "model": "BizServices",
       "foreignKey": "moduleServiceId"
     },
-    "ServiceProvide": {
+    "ServiceProvider": {
       "type": "belongsTo",
       "model": "BizServiceProviders",
       "foreignKey": "moduleServiceProviderId"
