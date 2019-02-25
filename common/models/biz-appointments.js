@@ -72,19 +72,20 @@ module.exports = function(Bizappointments) {
     	let apptServices =  appointmentInfo["services"];
     	delete appointmentInfo["services"];
 
-    	Bizservices.app.models.BizSites.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId)}}).then(businessInfo=>{
-    		if(isValidObject(businessInfo)){
+    	Bizappointments.app.models.BizSites.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId)}}).then(businessInfo=>{
+    		//console.log(businessInfo)
+            if(isValidObject(businessInfo)){
 
     			appointmentInfo["moduleSiteId"] = businessInfo["moduleSiteId"];
 
-    			Bizservices.app.models.BizClients.findOne({"where":{"bizClientId":convertObjectIdToString(appointmentInfo["businessClientId"])}}).then(clientInfo=>{
+    			Bizappointments.app.models.BizClients.findOne({"where":{"bizClientId":convertObjectIdToString(appointmentInfo["bizClientId"])}}).then(clientInfo=>{
     				if(isValidObject(clientInfo)){
 
 	    				appointmentInfo["moduleClientId"] = clientInfo["moduleClientId"];
 
 	    				Bizappointments.create(appointmentInfo).then(apptInfo=>{
 
-		    				funUpdateServicesForAppointment(apptServices,apptInfo["appointmentId"]);
+		    				funUpdateServicesForAppointment(apptServices,apptInfo["appointmentId"],businessSiteId);
 		    				cb(null,{"success":true,"appointmentId": apptInfo["appointmentId"] });
 
 		    			}).catch(error=>{
@@ -110,7 +111,8 @@ module.exports = function(Bizappointments) {
                     expose: false
                 }));
     		}
-    	}).catch(error=>{
+    	})
+        .catch(error=>{
 		    return cb(new HttpErrors.InternalServerError('Invalid site id', {
 	                expose: false
 	        }));	
@@ -118,44 +120,56 @@ module.exports = function(Bizappointments) {
 
     }
 
-    function funUpdateServicesForAppointment(apptServices,appointmentId){
+    function funUpdateServicesForAppointment(apptServices,appointmentId,bizSiteId){
     	let insertJson = {};
-    	Bizappointments.app.models.AppointmentServiceProviderRelation.destroyAll({"where":{"appointmentId":appointmentId}}).then(res=>{
+        //console.log(apptServices);
+
+    	Bizappointments.app.models.AppointmentServiceProviderRelation.destroyAll({"appointmentId":appointmentId}).then(res=>{
+            //console.log(res);
     		async.each(apptServices,function(item,callbk){
 
     			insertJson = {
-    				"bizSiteId":"",
+                    "bizSiteId": bizSiteId,
+                    "moduleSiteId":"",
     				"appointmentId": appointmentId ,
-    				"bizServiceId":item["serviceId"],
-    				"bizServiceProviderId":item["serviceProviderId"],
+    				"bizServiceId":convertObjectIdToString(item["serviceId"]),
+    				"bizServiceProviderId":convertObjectIdToString(item["serviceProviderId"]),
     				"moduleServiceId":"",
     				"moduleServiceProviderId":"",
     				"isActive":true
     			};
 
-    			Bizappointments.app.models.BizServices.findOne({"where":{"bizServiceId": convertObjectIdToString(item["serviceId"]) }}).then(serviceInfo=>{
-    				insertJson["moduleServiceId"] = serviceInfo["moduleServiceId"];
-    				Bizappointments.app.models.BizServiceProviders.findOne({"where":{"bizServiceProviderId": convertObjectIdToString(item["serviceProviderId"]) }}).then(providerInfo=>{
-    					insertJson["moduleServiceProviderId"] = serviceInfo["moduleServiceProviderId"];
-
-    					Bizappointments.app.models.AppointmentServiceProviderRelation.create(insertJson).then(response=>{
-			    			callbk();
-			    		}).catch(error=>{
-						    callbk();
-						});
-				
-    				}).catch(error=>{
-    					callbk();
-    				});
-    			}).catch(error=>{
-    				callbk();
-    			});
+                Bizappointments.app.models.BizSites.findOne({"where":{"bizSiteId": convertObjectIdToString(bizSiteId) }}).then(bizInfo=>{
+                        insertJson["moduleSiteId"] = bizInfo["moduleSiteId"];
+        			Bizappointments.app.models.BizServices.findOne({"where":{"bizServiceId": convertObjectIdToString(item["serviceId"]) }}).then(serviceInfo=>{
+        				insertJson["moduleServiceId"] = serviceInfo["moduleServiceId"];
+        				
+                        Bizappointments.app.models.BizServiceProviders.findOne({"where":{"bizServiceProviderId": convertObjectIdToString(item["serviceProviderId"]) }}).then(providerInfo=>{
+        					insertJson["moduleServiceProviderId"] = providerInfo["moduleServiceProviderId"];
+                            //console.log("2222");
+        					Bizappointments.app.models.AppointmentServiceProviderRelation.create(insertJson).then(response=>{
+    			    			//console.log("33333");
+                                callbk();
+    			    		}).catch(error=>{
+    						    callbk();
+    						});
+    				
+        				}).catch(error=>{
+        					callbk();
+        				});
+        			}).catch(error=>{
+        				callbk();
+        			});
+                }).catch(error=>{
+                        callbk();
+                 });
 
 	    	},function(){
 
 	    	});
 
-    	}).catch(error=>{
+    	})
+        .catch(error=>{
 		    	
 		});
 
@@ -196,7 +210,7 @@ module.exports = function(Bizappointments) {
     			delete appointmentInfo["services"];
 
     			appoinmentResponse.updateAttributes(appointmentInfo).then(updateInfo=>{
-    				funUpdateServicesForAppointment(apptServices,appoinmentResponse["appointmentId"]);
+    				funUpdateServicesForAppointment(apptServices,appoinmentResponse["appointmentId"],appointmentInfo["bizSiteId"]);
     				cb(null,{"success":true,"appointmentId": appoinmentResponse["appointmentId"] });
     			}).catch(error=>{
     				return cb(new HttpErrors.InternalServerError('Error while updating appointment.', {
@@ -408,7 +422,7 @@ module.exports = function(Bizappointments) {
     						"include":[
     								{relation:'Biz'}, {relation:'Client'},
     								{relation:'ApptServices',scope:{
-    									include:[{relation:'Service'},{relation:'ServiceProvide'}]
+    									include:[{relation:'Service'},{relation:'ServiceProvider'}]
     								}}
     								],
     						"order":"appointmentStartTime ASC"
@@ -480,7 +494,15 @@ module.exports = function(Bizappointments) {
 
     Bizappointments.getServiceProviderCalender = (businessSiteId,businessServiceProviderId,filterCriteria, cb) => {
     	//TODO :  IMPMLEMENTATION
-    	cb(null,{"success":true});
+        let includeCond=[{relation:'Appointment',scope:{fields:["appointmentDate","appointmentStartTime","appointmentEndTime"]}}];
+        //console.log(convertObjectIdToString(businessServiceProviderId));
+        //includeCond = [{relation:'Appointment'}];
+        Bizappointments.app.models.AppointmentServiceProviderRelation.find({"where":{"bizServiceProviderId": convertObjectIdToString(businessServiceProviderId) },"include":includeCond }).then(providrTimeSlots=>{
+            //console.log(providrTimeSlots);
+            cb(null,providrTimeSlots);
+        });
+
+    	
     }
 
 
