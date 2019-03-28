@@ -19,7 +19,7 @@
     "loopback-cli": "^5.0.0",
     "loopback-component-explorer": "^6.2.0",
     "loopback-connector-mongodb": "^1.18.1",
-    "service-adapter-prodio": "0.0.13"
+    "service-adapter-prodio": "0.0.16"
   },
   "devDependencies": {
     "eslint": "^3.17.1",
