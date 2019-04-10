@@ -55,6 +55,10 @@ module.exports = function(Bizappointments) {
     }
 
     Bizappointments.createAppointment = (appointmentInfo,businessSiteId, cb) => {
+
+        if (!isNull(appointmentInfo["meta"])) {
+            appointmentInfo = appointmentInfo["meta"];
+        }
     	
 
     	appointmentInfo["appointmentStartDateTime"] = funUpdateDateFormat(appointmentInfo["appointmentDate"],appointmentInfo["appointmentStartTime"]);

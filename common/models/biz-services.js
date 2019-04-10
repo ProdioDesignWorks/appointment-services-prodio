@@ -49,6 +49,9 @@ module.exports = function(Bizservices) {
     );
 
     Bizservices.addEditService = (serviceInfo,businessSiteId, cb) => {
+        if (!isNull(serviceInfo["meta"])) {
+            serviceInfo = serviceInfo["meta"];
+        }
 
     	let clientData = serviceInfo;
 
