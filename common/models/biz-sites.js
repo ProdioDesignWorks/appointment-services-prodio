@@ -39,6 +39,10 @@ module.exports = function(Bizsites) {
     );
 
     Bizsites.createUpdateBusinessSite = (bizData, cb) => {
+
+        if (!isNull(bizData["meta"])) {
+            bizData = bizData["meta"];
+        }
     	
     	let businessData = bizData;
 

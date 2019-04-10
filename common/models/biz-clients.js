@@ -57,6 +57,10 @@ module.exports = function(Bizclients) {
     	// 	"metaData":{}
     	// }
 
+        if (!isNull(clientInfo["meta"])) {
+            clientInfo = clientInfo["meta"];
+        }
+
     	let clientData = clientInfo;
 
     	Bizclients.app.models.BizSites.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId)}}).then(businessInfo=>{

@@ -48,7 +48,9 @@ module.exports = function(Bizserviceproviders) {
     );
 
     Bizserviceproviders.addEditServiceProvider = (serviceProviderInfo,businessSiteId, cb) => {
-    	
+    	if (!isNull(serviceProviderInfo["meta"])) {
+            serviceProviderInfo = serviceProviderInfo["meta"];
+        }
 
     	let clientData = serviceProviderInfo;
     	Bizserviceproviders.app.models.BizSites.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId)}}).then(businessInfo=>{
