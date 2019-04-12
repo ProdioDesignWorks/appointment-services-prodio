@@ -498,12 +498,40 @@ module.exports = function(Bizappointments) {
 
     Bizappointments.getServiceProviderCalender = (businessSiteId,businessServiceProviderId,filterCriteria, cb) => {
     	//TODO :  IMPMLEMENTATION
-        let includeCond=[{relation:'Appointment',scope:{fields:["appointmentDate","appointmentStartTime","appointmentEndTime"]}}];
-        //console.log(convertObjectIdToString(businessServiceProviderId));
-        //includeCond = [{relation:'Appointment'}];
-        Bizappointments.app.models.AppointmentServiceProviderRelation.find({"where":{"bizServiceProviderId": convertObjectIdToString(businessServiceProviderId) },"include":includeCond }).then(providrTimeSlots=>{
-            //console.log(providrTimeSlots);
-            cb(null,providrTimeSlots);
+        Bizappointments.app.models.BizSites.findOne({"where":{"bizSiteId":convertObjectIdToString(businessSiteId)}}).then(businessInfo=>{
+            if(isValidObject(businessInfo)){
+
+                Bizappointments.app.models.BizServiceProviders.findOne({"where":{"bizServiceProviderId": convertObjectIdToString(businessServiceProviderId) }}).then(providerInfo=>{
+
+                    if(isValidObject(providerInfo)){
+                        let includeCond=[{relation:'Appointment',scope:{fields:["appointmentDate","appointmentStartTime","appointmentEndTime"]}}];
+                        //console.log(convertObjectIdToString(businessServiceProviderId));
+                        //includeCond = [{relation:'Appointment'}];
+                        Bizappointments.app.models.AppointmentServiceProviderRelation.find({"where":{"bizServiceProviderId": convertObjectIdToString(businessServiceProviderId) },"include":includeCond }).then(providrTimeSlots=>{
+                            //console.log(providrTimeSlots);
+                            cb(null,providrTimeSlots);
+                        });
+                    }else{
+                        return cb(new HttpErrors.InternalServerError('Invalid Service Provider Id.', {
+                            expose: false
+                        }));
+                    }
+                    
+                }).catch(err=>{
+                    return cb(new HttpErrors.InternalServerError('Error while fetching service provider Info.', {
+                            expose: false
+                    }));
+                });
+            }else{
+                return cb(new HttpErrors.InternalServerError('Invalid site Id.', {
+                    expose: false
+                }));
+            }
+            
+        }).catch(err=>{
+            return cb(new HttpErrors.InternalServerError('Error while fetching site Info.', {
+                    expose: false
+            }));
         });
 
     	
