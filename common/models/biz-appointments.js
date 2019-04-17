@@ -407,8 +407,8 @@ module.exports = function(Bizappointments) {
             http: {  verb: 'post'  },
             description: ["It will create appointment for the site."],
             accepts: [
-                { arg: 'businessSiteId', type: 'string', required: true, http: { source: 'query' } },
-                { arg: 'businessClientId', type: 'string', required: false, http: { source: 'query' } },
+                { arg: 'businessSiteId', type: 'string', required: false, http: { source: 'query' } },
+                { arg: 'businessClientId', type: 'string', required: true, http: { source: 'query' } },
                 { arg: 'pageNo', type: 'number', required: true, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }
@@ -418,10 +418,15 @@ module.exports = function(Bizappointments) {
     Bizappointments.listAppointments = (businessSiteId,businessClientId,pageNo, cb) => {
 
     	let limit = 10;
-    	let whereClause = {"isCancelled":false,"isDeleted":false,"bizSiteId": convertObjectIdToString(businessSiteId) };
+    	let whereClause = {"isCancelled":false,"isDeleted":false };
     	if(!isNull(businessClientId)){
     		whereClause["bizClientId"] = convertObjectIdToString(businessClientId);
     	}
+
+        if(!isNull(businessSiteId)){
+            whereClause["bizSiteId"] = convertObjectIdToString(businessSiteId);
+        }
+
     	let filterObject = {"where": whereClause ,
     						"include":[
     								{relation:'Biz'}, {relation:'Client'},
