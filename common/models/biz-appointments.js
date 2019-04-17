@@ -408,8 +408,8 @@ module.exports = function(Bizappointments) {
             description: ["It will create appointment for the site."],
             accepts: [
                 { arg: 'businessSiteId', type: 'string', required: false, http: { source: 'query' } },
-                { arg: 'businessClientId', type: 'string', required: true, http: { source: 'query' } },
-                { arg: 'pageNo', type: 'number', required: true, http: { source: 'query' } }
+                { arg: 'businessClientId', type: 'string', required: false, http: { source: 'query' } },
+                { arg: 'pageNo', type: 'number', required: false, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }
         }
