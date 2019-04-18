@@ -89,8 +89,8 @@ module.exports = function(Bizappointments) {
 
 	    				Bizappointments.create(appointmentInfo).then(apptInfo=>{
 
-		    				funUpdateServicesForAppointment(apptServices,apptInfo["appointmentId"],businessSiteId);
-		    				cb(null,{"success":true,"appointmentId": apptInfo["appointmentId"] });
+		    				funUpdateServicesForAppointment(apptServices,apptInfo["moduleAppointmentId"],businessSiteId);
+		    				cb(null,{"success":true,"appointmentId": apptInfo["moduleAppointmentId"] });
 
 		    			}).catch(error=>{
 						    return cb(new HttpErrors.InternalServerError('Error while creating appointment.', {
@@ -427,9 +427,11 @@ module.exports = function(Bizappointments) {
             whereClause["bizSiteId"] = convertObjectIdToString(businessSiteId);
         }
 
+
     	let filterObject = {"where": whereClause ,
     						"include":[
-    								{relation:'Biz'}, {relation:'Client'},
+    								{relation:'Biz'}, 
+    								{relation:'Client'},
     								{relation:'ApptServices',scope:{
     									include:[{relation:'Service'},{relation:'ServiceProvider'}]
     								}}
@@ -537,10 +539,42 @@ module.exports = function(Bizappointments) {
             return cb(new HttpErrors.InternalServerError('Error while fetching site Info.', {
                     expose: false
             }));
-        });
-
-    	
+        });	
     }
+
+
+    Bizappointments.remoteMethod(
+        'getAppointmentDetails', {
+            http: {  verb: 'post'  },
+            description: ["It will create appointment for the site."],
+            accepts: [
+                { arg: 'appointmentId', type: 'string', required: true, http: { source: 'query' } }
+            ],
+            returns: { type: 'object', root: true }
+        }
+    );
+
+    Bizappointments.getAppointmentDetails = (appointmentId, cb) => {
+    	let filterObject = {"where": {"moduleAppointmentId":appointmentId} ,
+    						"include":[
+    								{relation:'Biz'}, 
+    								{relation:'Client'},
+    								{relation:'ApptServices',scope:{
+    									include:[{relation:'Service'},{relation:'ServiceProvider'}]
+    								}}
+    								],
+    						"order":"appointmentStartTime ASC"
+    					};
+
+    	Bizappointments.findOne(filterObject).then(appointments=>{
+    		cb(null,appointments);
+    	}).catch(err=>{
+    		return cb(new HttpErrors.InternalServerError('Internal server error.', {
+	                expose: false
+	        }));
+    	});
+    }
+
 
 
     // 1. Get service based Not available time slots - day, week, month

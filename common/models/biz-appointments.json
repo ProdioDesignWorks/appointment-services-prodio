@@ -7,7 +7,7 @@
     "validateUpsert": true
   },
   "properties": {
-    "appointmentId": {
+    "moduleAppointmentId": {
       "type": "string",
       "id": true,
       "defaultFn": "uuidv4"
@@ -93,7 +93,8 @@
     "ApptServices": {
       "type": "hasMany",
       "model": "AppointmentServiceProviderRelation",
-      "foreignKey": "appointmentId"
+      "foreignKey": "appointmentId",
+      "primaryKey": "moduleAppointmentId"
     }
   },
   "acls": [],
