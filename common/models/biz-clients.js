@@ -15,6 +15,10 @@ const {
 } = require('../../utility/helper');
 let async = require('async');
 
+
+const apptClass = require('appointment-module-prodio');
+const apptObj = new apptClass('http://localhost:3030/api/');
+
 module.exports = function(Bizclients) {
 
 	Bizclients.remoteMethod(
@@ -236,6 +240,37 @@ module.exports = function(Bizclients) {
     		}
     	});
     }
+
+
+    Bizclients.remoteMethod(
+        'testAppointment', {
+            http: {  verb: 'post'  },
+            description: ["It will create appointment for the site."],
+            accepts: [
+                { arg: 'businessSiteId', type: 'string', required: false, http: { source: 'query' } }
+            ],
+            returns: { type: 'object', root: true }
+        }
+    );
+
+    Bizclients.testAppointment = (businessSiteId, cb) => {
+         let json = {
+            "appointmentId": "feda88d3-d1f0-4a73-ab16-474dd12dadc9",
+        };
+
+        const processPayload = {
+            'action': "GET_APPOINTMENT_DETAILS",
+            'meta': json
+        };
+
+
+        apptObj.execute(processPayload, response => {
+            console.log("response", response.status);
+            console.log("response data", response.data);
+            return cb(null, response.data);
+        })
+    }
+
 
 
 
