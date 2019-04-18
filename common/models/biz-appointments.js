@@ -86,6 +86,7 @@ module.exports = function(Bizappointments) {
     				if(isValidObject(clientInfo)){
 
 	    				appointmentInfo["moduleClientId"] = clientInfo["moduleClientId"];
+	    				appointmentInfo["bizClientId"] = convertObjectIdToString(appointmentInfo["bizClientId"]);
 
 	    				Bizappointments.create(appointmentInfo).then(apptInfo=>{
 
@@ -438,6 +439,7 @@ module.exports = function(Bizappointments) {
     								],
     						"order":"appointmentStartTime ASC"
     					};
+    	//console.log(filterObject);
 
     	filterObject.skip = parseInt(pageNo) * parseInt(limit);
 		filterObject.limit = limit;
