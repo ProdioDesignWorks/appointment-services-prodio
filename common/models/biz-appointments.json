@@ -24,6 +24,9 @@
     "moduleClientId":{
       "type": "string"
     },
+    "appointmentName": {
+      "type": "string"
+    },
     "appointmentDate": {
       "type": "string"
     },
