@@ -410,13 +410,14 @@ module.exports = function(Bizappointments) {
             accepts: [
                 { arg: 'businessSiteId', type: 'string', required: false, http: { source: 'query' } },
                 { arg: 'businessClientId', type: 'string', required: false, http: { source: 'query' } },
-                { arg: 'pageNo', type: 'number', required: false, http: { source: 'query' } }
+                { arg: 'pageNo', type: 'number', required: false, http: { source: 'query' } },
+                { arg: 'timeframe', type: 'number', required: false, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }
         }
     );
 
-    Bizappointments.listAppointments = (businessSiteId,businessClientId,pageNo, cb) => {
+    Bizappointments.listAppointments = (businessSiteId,businessClientId,pageNo,timeframe, cb) => {
 
     	let limit = 10;
     	let whereClause = {"isCancelled":false,"isDeleted":false };
@@ -426,6 +427,33 @@ module.exports = function(Bizappointments) {
 
         if(!isNull(businessSiteId)){
             whereClause["bizSiteId"] = convertObjectIdToString(businessSiteId);
+        }
+
+        if (timeframe != "" && timeframe != null) {
+            switch(timeframe){
+                case "COMPLETED":
+                    whereClause["isCompleted"] = true;
+                    whereClause["isCancelled"] = false; 
+                    whereClause["isDeleted"] = false;
+                break;
+                case "TODAY":
+                    whereClause["isCompleted"] = false;
+                    let _cDate = new Date();
+                    let _sDate = new Date((_cDate.getMonth()+1)+"-"+_cDate.getDate()+"-"+_cDate.getFullYear()+" 00:00:00");
+                    let _eDate = new Date((_cDate.getMonth()+1)+"-"+_cDate.getDate()+"-"+_cDate.getFullYear()+" 23:59:59");
+                    whereClause["isCancelled"] = false; 
+                    whereClause["isDeleted"] = false;
+                    whereClause["appointmentDate"] = {"gte":_sDate,"lte":_eDate};
+                break;
+                case "UPCOMING":
+                    whereClause["isCompleted"] = false;
+                    let _cDate = new Date();
+                    let _eDate = new Date((_cDate.getMonth()+1)+"-"+_cDate.getDate()+"-"+_cDate.getFullYear()+" 23:59:59");
+                    whereClause["isCancelled"] = false; 
+                    whereClause["isDeleted"] = false;
+                    whereClause["appointmentDate"] = {"gt":_eDate};
+                break;
+            }
         }
 
 
