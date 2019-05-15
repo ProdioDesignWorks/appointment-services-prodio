@@ -404,6 +404,88 @@ module.exports = function(Bizappointments) {
 
 
     Bizappointments.remoteMethod(
+        'listAppointmentsByService', {
+            http: {  verb: 'post'  },
+            description: ["It will create appointment for the site."],
+            accepts: [
+                { arg: 'businessSiteId', type: 'string', required: false, http: { source: 'query' } },
+                { arg: 'businessServiceId', type: 'string', required: true, http: { source: 'query' } },
+                { arg: 'pageNo', type: 'number', required: false, http: { source: 'query' } },
+                { arg: 'timeframe', type: 'number', required: false, http: { source: 'query' } }
+            ],
+            returns: { type: 'object', root: true }
+        }
+    );
+
+    Bizappointments.listAppointmentsByService = (businessSiteId,businessServiceId,pageNo,timeframe, cb) => {
+
+        let limit = 10;
+        let whereClause = {"isCancelled":false,"isDeleted":false };
+        if(!isNull(businessSiteId)){
+            whereClause["bizSiteId"] = convertObjectIdToString(businessSiteId);
+        }
+
+        let insideWhereClause = {"isActive":true};
+
+        if(!isNull(businessServiceId)){
+            insideWhereClause["bizServiceId"] = convertObjectIdToString(businessServiceId);
+        }
+
+        if (timeframe != "" && timeframe != null) {
+            switch(timeframe){
+                case "COMPLETED":
+                    whereClause["isCompleted"] = true;
+                    whereClause["isCancelled"] = false; 
+                    whereClause["isDeleted"] = false;
+                break;
+                case "TODAY":
+                    whereClause["isCompleted"] = false;
+                    let _cDate = new Date();
+                    let _sDate = new Date((_cDate.getMonth()+1)+"-"+_cDate.getDate()+"-"+_cDate.getFullYear()+" 00:00:00");
+                    let _eDate = new Date((_cDate.getMonth()+1)+"-"+_cDate.getDate()+"-"+_cDate.getFullYear()+" 23:59:59");
+                    whereClause["isCancelled"] = false; 
+                    whereClause["isDeleted"] = false;
+                    whereClause["appointmentDate"] = {"gte":_sDate,"lte":_eDate};
+                break;
+                case "UPCOMING":
+                    whereClause["isCompleted"] = false;
+                    let _cuDate = new Date();
+                    let _enDate = new Date((_cuDate.getMonth()+1)+"-"+_cuDate.getDate()+"-"+_cuDate.getFullYear()+" 23:59:59");
+                    whereClause["isCancelled"] = false; 
+                    whereClause["isDeleted"] = false;
+                    whereClause["appointmentDate"] = {"gt":_enDate};
+                break;
+            }
+        }
+
+
+        let filterObject = {"where": whereClause ,
+                            "include":[
+                                    {relation:'Biz'}, 
+                                    {relation:'Client'},
+                                    {relation:'ApptServices',scope:{
+                                        where: insideWhereClause,
+                                        include:[{relation:'Service'},{relation:'ServiceProvider'}]
+                                    }}
+                                    ],
+                            "order":"appointmentStartTime ASC"
+                        };
+        //console.log(filterObject);
+
+        filterObject.skip = parseInt(pageNo) * parseInt(limit);
+        filterObject.limit = limit;
+
+        Bizappointments.find(filterObject).then(appointments=>{
+            cb(null,appointments);
+        }).catch(err=>{
+            return cb(new HttpErrors.InternalServerError('Internal server error.', {
+                    expose: false
+            }));
+        });
+    }
+
+
+    Bizappointments.remoteMethod(
         'listAppointments', {
             http: {  verb: 'post'  },
             description: ["It will create appointment for the site."],
@@ -447,11 +529,11 @@ module.exports = function(Bizappointments) {
                 break;
                 case "UPCOMING":
                     whereClause["isCompleted"] = false;
-                    let _cDate = new Date();
-                    let _eDate = new Date((_cDate.getMonth()+1)+"-"+_cDate.getDate()+"-"+_cDate.getFullYear()+" 23:59:59");
+                    let _cuDate = new Date();
+                    let _enDate = new Date((_cuDate.getMonth()+1)+"-"+_cuDate.getDate()+"-"+_cuDate.getFullYear()+" 23:59:59");
                     whereClause["isCancelled"] = false; 
                     whereClause["isDeleted"] = false;
-                    whereClause["appointmentDate"] = {"gt":_eDate};
+                    whereClause["appointmentDate"] = {"gt":_enDate};
                 break;
             }
         }
@@ -541,7 +623,7 @@ module.exports = function(Bizappointments) {
                 Bizappointments.app.models.BizServiceProviders.findOne({"where":{"bizServiceProviderId": convertObjectIdToString(businessServiceProviderId) }}).then(providerInfo=>{
 
                     if(isValidObject(providerInfo)){
-                        let includeCond=[{relation:'Appointment',scope:{fields:["appointmentDate","appointmentStartTime","appointmentEndTime"]}}];
+                        let includeCond=[{relation:'Appointment',scope:{where:{"isCancelled":false,"isDeleted":false},fields:["appointmentDate","appointmentStartTime","appointmentEndTime"]}}];
                         //console.log(convertObjectIdToString(businessServiceProviderId));
                         //includeCond = [{relation:'Appointment'}];
                         Bizappointments.app.models.AppointmentServiceProviderRelation.find({"where":{"bizServiceProviderId": convertObjectIdToString(businessServiceProviderId) },"include":includeCond }).then(providrTimeSlots=>{
