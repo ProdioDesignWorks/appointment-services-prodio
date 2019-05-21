@@ -404,6 +404,43 @@ module.exports = function(Bizappointments) {
 
 
     Bizappointments.remoteMethod(
+        'markCompleteAppointment', {
+            http: {  verb: 'post'  },
+            description: ["It will create appointment for the site."],
+            accepts: [
+                { arg: 'appointmentId', type: 'string', required: true, http: { source: 'query' } }
+            ],
+            returns: { type: 'object', root: true }
+        }
+    );
+
+    Bizappointments.markCompleteAppointment = (appointmentId, cb) => {
+        Bizappointments.findById(appointmentId).then(appoinmentResponse=>{
+            if(isValidObject(appoinmentResponse)){
+
+                appointmentInfo["isCompleted"] = true;
+
+                appoinmentResponse.updateAttributes(appointmentInfo).then(updateInfo=>{
+                    cb(null,{"success":true,"appointmentId": appoinmentResponse["appointmentId"] });
+                }).catch(error=>{
+                    return cb(new HttpErrors.InternalServerError('Error while updating appointment.', {
+                        expose: false
+                    }));
+                });
+
+            }else{
+                return cb(new HttpErrors.InternalServerError('Invalid Appointment id', {
+                    expose: false
+                }));
+            }
+        }).catch(error=>{
+            return cb(new HttpErrors.InternalServerError('Internal server error.', {
+                    expose: false
+                }));
+        });
+    }
+
+    Bizappointments.remoteMethod(
         'listAppointmentsByService', {
             http: {  verb: 'post'  },
             description: ["It will create appointment for the site."],
