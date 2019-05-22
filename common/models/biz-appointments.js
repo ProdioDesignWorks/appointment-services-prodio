@@ -447,8 +447,8 @@ module.exports = function(Bizappointments) {
             accepts: [
                 { arg: 'businessSiteId', type: 'string', required: false, http: { source: 'query' } },
                 { arg: 'businessServiceId', type: 'string', required: true, http: { source: 'query' } },
-                { arg: 'pageNo', type: 'number', required: false, http: { source: 'query' } },
-                { arg: 'timeframe', type: 'number', required: false, http: { source: 'query' } }
+                { arg: 'pageNo', type: 'string', required: false, http: { source: 'query' } },
+                { arg: 'timeframe', type: 'string', required: false, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }
         }
@@ -509,15 +509,23 @@ module.exports = function(Bizappointments) {
                         };
         //console.log(filterObject);
 
-        filterObject.skip = parseInt(pageNo) * parseInt(limit);
-        filterObject.limit = limit;
+        Bizappointments.count(filterObject["where"]).then(countRes=>{
 
-        Bizappointments.find(filterObject).then(appointments=>{
-            cb(null,appointments);
-        }).catch(err=>{
-            return cb(new HttpErrors.InternalServerError('Internal server error.', {
-                    expose: false
-            }));
+            filterObject.skip = parseInt(pageNo) * parseInt(limit);
+            filterObject.limit = limit;
+
+            let moreResultsToShow = parseInt(countRes) - ( (parseInt(pageNo) + 1) * parseInt(limit)  );
+            if( moreResultsToShow < 1){
+                moreResultsToShow = 0;
+            }
+
+            Bizappointments.find(filterObject).then(appointments=>{
+                cb(null,{"data":appointments,"totalResults": countRes, "moreResultsToShow": moreResultsToShow });
+            }).catch(err=>{
+                return cb(new HttpErrors.InternalServerError('Internal server error.', {
+                        expose: false
+                }));
+            });
         });
     }
 
@@ -529,8 +537,8 @@ module.exports = function(Bizappointments) {
             accepts: [
                 { arg: 'businessSiteId', type: 'string', required: false, http: { source: 'query' } },
                 { arg: 'businessClientId', type: 'string', required: false, http: { source: 'query' } },
-                { arg: 'pageNo', type: 'number', required: false, http: { source: 'query' } },
-                { arg: 'timeframe', type: 'number', required: false, http: { source: 'query' } }
+                { arg: 'pageNo', type: 'string', required: false, http: { source: 'query' } },
+                { arg: 'timeframe', type: 'string', required: false, http: { source: 'query' } }
             ],
             returns: { type: 'object', root: true }
         }
@@ -588,16 +596,25 @@ module.exports = function(Bizappointments) {
     					};
     	//console.log(filterObject);
 
-    	filterObject.skip = parseInt(pageNo) * parseInt(limit);
-		filterObject.limit = limit;
+        Bizappointments.count(filterObject["where"]).then(countRes=>{
 
-    	Bizappointments.find(filterObject).then(appointments=>{
-    		cb(null,appointments);
-    	}).catch(err=>{
-    		return cb(new HttpErrors.InternalServerError('Internal server error.', {
-	                expose: false
-	        }));
-    	});
+            console.log(countRes);
+
+        	filterObject.skip = parseInt(pageNo) * parseInt(limit);
+    		filterObject.limit = limit;
+
+            let moreResultsToShow = parseInt(countRes) - ( (parseInt(pageNo) + 1) * parseInt(limit)  );
+            if( moreResultsToShow < 1){
+                moreResultsToShow = 0;
+            }
+        	Bizappointments.find(filterObject).then(appointments=>{
+        		cb(null,{"data":appointments,"totalResults": countRes, "moreResultsToShow": moreResultsToShow });
+        	}).catch(err=>{
+        		return cb(new HttpErrors.InternalServerError('Internal server error.', {
+    	                expose: false
+    	        }));
+        	});
+        });
     }
 
 
