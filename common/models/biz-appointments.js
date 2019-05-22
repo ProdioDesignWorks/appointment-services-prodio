@@ -482,7 +482,7 @@ module.exports = function(Bizappointments) {
                     let _eDate = new Date((_cDate.getMonth()+1)+"-"+_cDate.getDate()+"-"+_cDate.getFullYear()+" 23:59:59");
                     whereClause["isCancelled"] = false; 
                     whereClause["isDeleted"] = false;
-                    whereClause["appointmentDate"] = {"gte":_sDate,"lte":_eDate};
+                    whereClause["appointmentDate"] = {"gte":new Date(_sDate),"lte":new Date(_eDate)};
                 break;
                 case "UPCOMING":
                     whereClause["isCompleted"] = false;
@@ -490,7 +490,7 @@ module.exports = function(Bizappointments) {
                     let _enDate = new Date((_cuDate.getMonth()+1)+"-"+_cuDate.getDate()+"-"+_cuDate.getFullYear()+" 23:59:59");
                     whereClause["isCancelled"] = false; 
                     whereClause["isDeleted"] = false;
-                    whereClause["appointmentDate"] = {"gt":_enDate};
+                    whereClause["appointmentDate"] = {"gt":new Date(_enDate)};
                 break;
             }
         }
@@ -570,7 +570,7 @@ module.exports = function(Bizappointments) {
                     let _eDate = new Date((_cDate.getMonth()+1)+"-"+_cDate.getDate()+"-"+_cDate.getFullYear()+" 23:59:59");
                     whereClause["isCancelled"] = false; 
                     whereClause["isDeleted"] = false;
-                    whereClause["appointmentDate"] = {"gte":_sDate,"lte":_eDate};
+                    whereClause["appointmentDate"] = {"gte":new Date(_sDate),"lte":new Date(_eDate)};
                 break;
                 case "UPCOMING":
                     whereClause["isCompleted"] = false;
@@ -578,7 +578,7 @@ module.exports = function(Bizappointments) {
                     let _enDate = new Date((_cuDate.getMonth()+1)+"-"+_cuDate.getDate()+"-"+_cuDate.getFullYear()+" 23:59:59");
                     whereClause["isCancelled"] = false; 
                     whereClause["isDeleted"] = false;
-                    whereClause["appointmentDate"] = {"gt":_enDate};
+                    whereClause["appointmentDate"] = {"gt":new Date(_enDate)};
                 break;
             }
         }
