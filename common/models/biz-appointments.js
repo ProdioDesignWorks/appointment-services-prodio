@@ -415,8 +415,8 @@ module.exports = function(Bizappointments) {
     );
 
     Bizappointments.markCompleteAppointment = (appointmentId, cb) => {
-        Bizappointments.findById(appointmentId).then(appoinmentResponse=>{
-            if(isValidObject(appoinmentResponse)){
+        Bizappointments.findById(appointmentId).then(appointmentInfo=>{
+            if(isValidObject(appointmentInfo)){
 
                 appointmentInfo["isCompleted"] = true;
 
