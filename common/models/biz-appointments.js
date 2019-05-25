@@ -458,13 +458,16 @@ module.exports = function(Bizappointments) {
 
         let limit = 10;
         let whereClause = {"isCancelled":false,"isDeleted":false };
+        if(isNull(pageNo)){pageNo=0;}
         if(!isNull(businessSiteId)){
             whereClause["bizSiteId"] = convertObjectIdToString(businessSiteId);
         }
 
-        let insideWhereClause = {"isActive":true};
+        let insideWhereClause = {"isActive":true}; let moduleServiceId="";
 
         if(!isNull(businessServiceId)){
+            moduleServiceId = convertObjectIdToString(businessServiceId);
+
             insideWhereClause["bizServiceId"] = convertObjectIdToString(businessServiceId);
         }
 
@@ -502,7 +505,7 @@ module.exports = function(Bizappointments) {
                                     {relation:'Client'},
                                     {relation:'ApptServices',scope:{
                                         where: insideWhereClause,
-                                        include:[{relation:'Service'},{relation:'ServiceProvider'}]
+                                        include:[{relation:'Service',scope:{where: {"bizServiceId":moduleServiceId} }},{relation:'ServiceProvider'}]
                                     }}
                                     ],
                             "order":"appointmentStartDateTime ASC"
@@ -511,8 +514,8 @@ module.exports = function(Bizappointments) {
 
         Bizappointments.count(filterObject["where"]).then(countRes=>{
 
-            filterObject.skip = parseInt(pageNo) * parseInt(limit);
-            filterObject.limit = limit;
+            //filterObject.skip = parseInt(pageNo) * parseInt(limit);
+            //filterObject.limit = limit;
 
             let moreResultsToShow = parseInt(countRes) - ( (parseInt(pageNo) + 1) * parseInt(limit)  );
             if( moreResultsToShow < 1){
@@ -520,13 +523,29 @@ module.exports = function(Bizappointments) {
             }
 
             Bizappointments.find(filterObject).then(appointments=>{
-                cb(null,{"data":appointments,"totalResults": countRes, "moreResultsToShow": moreResultsToShow });
+
+                //appointments =  appointments.toJson();
+                let filterappoints = appointments.filter((value, index, array )=>{
+                    value = JSON.parse(JSON.stringify(value));
+                    value["ApptServices"] = JSON.parse(JSON.stringify(value["ApptServices"]));
+                    //console.log(value["ApptServices"].length);
+                    return (value["ApptServices"].length > 0);
+                });
+
+                filterappoints = paginate(filterappoints,limit,pageNo);
+
+                cb(null,{"data":filterappoints ,"totalResults": countRes, "moreResultsToShow": moreResultsToShow });
             }).catch(err=>{
                 return cb(new HttpErrors.InternalServerError('Internal server error.', {
                         expose: false
                 }));
             });
         });
+    }
+
+    function paginate (array, page_size, page_number) {
+      //--page_number; // because pages logically start with 1, but technically with 0
+      return array.slice(page_number * page_size, (page_number + 1) * page_size);
     }
 
 
