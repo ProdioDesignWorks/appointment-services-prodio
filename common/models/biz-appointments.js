@@ -512,15 +512,11 @@ module.exports = function(Bizappointments) {
                         };
         //console.log(filterObject);
 
-        Bizappointments.count(filterObject["where"]).then(countRes=>{
+        //Bizappointments.count(filterObject["where"]).then(countRes=>{
 
             //filterObject.skip = parseInt(pageNo) * parseInt(limit);
             //filterObject.limit = limit;
 
-            let moreResultsToShow = parseInt(countRes) - ( (parseInt(pageNo) + 1) * parseInt(limit)  );
-            if( moreResultsToShow < 1){
-                moreResultsToShow = 0;
-            }
 
             Bizappointments.find(filterObject).then(appointments=>{
 
@@ -531,6 +527,12 @@ module.exports = function(Bizappointments) {
                     //console.log(value["ApptServices"].length);
                     return (value["ApptServices"].length > 0);
                 });
+                
+                let countRes = filterappoints.length;
+                let moreResultsToShow = parseInt(countRes) - ( (parseInt(pageNo) + 1) * parseInt(limit)  );
+                if( moreResultsToShow < 1){
+                    moreResultsToShow = 0;
+                }
 
                 filterappoints = paginate(filterappoints,limit,pageNo);
 
@@ -540,7 +542,7 @@ module.exports = function(Bizappointments) {
                         expose: false
                 }));
             });
-        });
+        //});
     }
 
     function paginate (array, page_size, page_number) {
