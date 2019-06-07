@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "appointment-module-prodio": "0.0.11",
+    "axios": "^0.19.0",
     "compression": "^1.7.3",
     "cors": "^2.8.5",
     "helmet": "^3.15.0",
@@ -19,7 +20,7 @@
     "loopback-boot": "^2.6.5",
     "loopback-cli": "^5.0.0",
     "loopback-component-explorer": "^6.2.0",
-    "loopback-connector-mongodb": "^1.18.1",
+    "loopback-connector-mongodb": "^3.8.0",
     "service-adapter-prodio": "0.0.16"
   },
   "devDependencies": {
