@@ -301,13 +301,13 @@ module.exports = function(Bizappointments) {
     );
 
     Bizappointments.cancelAppointment = (appointmentId, cb) => {
-    	Bizappointments.findById(appointmentId).then(appoinmentResponse=>{
-    		if(isValidObject(appoinmentResponse)){
+    	Bizappointments.findById(appointmentId).then(appointmentInfo=>{
+    		if(isValidObject(appointmentInfo)){
 
 		    	appointmentInfo["isCancelled"] = true;
 
-    			appoinmentResponse.updateAttributes(appointmentInfo).then(updateInfo=>{
-    				cb(null,{"success":true,"appointmentId": appoinmentResponse["appointmentId"] });
+    			appointmentInfo.updateAttributes(appointmentInfo).then(updateInfo=>{
+    				cb(null,{"success":true,"appointmentId": appointmentInfo["appointmentId"] });
     			}).catch(error=>{
     				return cb(new HttpErrors.InternalServerError('Error while updating appointment.', {
 		                expose: false
@@ -339,13 +339,13 @@ module.exports = function(Bizappointments) {
     );
 
     Bizappointments.deleteAppointment = (appointmentId, cb) => {
-    	Bizappointments.findById(appointmentId).then(appoinmentResponse=>{
-    		if(isValidObject(appoinmentResponse)){
+    	Bizappointments.findById(appointmentId).then(appointmentInfo=>{
+    		if(isValidObject(appointmentInfo)){
 
 		    	appointmentInfo["isDeleted"] = false;
 
-    			appoinmentResponse.updateAttributes(appointmentInfo).then(updateInfo=>{
-    				cb(null,{"success":true,"appointmentId": appoinmentResponse["appointmentId"] });
+    			appointmentInfo.updateAttributes(appointmentInfo).then(updateInfo=>{
+    				cb(null,{"success":true,"appointmentId": appointmentInfo["appointmentId"] });
     			}).catch(error=>{
     				return cb(new HttpErrors.InternalServerError('Error while updating appointment.', {
 		                expose: false
@@ -377,13 +377,13 @@ module.exports = function(Bizappointments) {
     );
 
     Bizappointments.confirmAppointment = (appointmentId, cb) => {
-    	Bizappointments.findById(appointmentId).then(appoinmentResponse=>{
-    		if(isValidObject(appoinmentResponse)){
+    	Bizappointments.findById(appointmentId).then(appointmentInfo=>{
+    		if(isValidObject(appointmentInfo)){
 
 		    	appointmentInfo["isConfirmed"] = true;
 
-    			appoinmentResponse.updateAttributes(appointmentInfo).then(updateInfo=>{
-    				cb(null,{"success":true,"appointmentId": appoinmentResponse["appointmentId"] });
+    			appointmentInfo.updateAttributes(appointmentInfo).then(updateInfo=>{
+    				cb(null,{"success":true,"appointmentId": appointmentInfo["appointmentId"] });
     			}).catch(error=>{
     				return cb(new HttpErrors.InternalServerError('Error while updating appointment.', {
 		                expose: false
@@ -420,8 +420,8 @@ module.exports = function(Bizappointments) {
 
                 appointmentInfo["isCompleted"] = true;
 
-                appoinmentResponse.updateAttributes(appointmentInfo).then(updateInfo=>{
-                    cb(null,{"success":true,"appointmentId": appoinmentResponse["appointmentId"] });
+                appointmentInfo.updateAttributes(appointmentInfo).then(updateInfo=>{
+                    cb(null,{"success":true,"appointmentId": appointmentInfo["appointmentId"] });
                 }).catch(error=>{
                     return cb(new HttpErrors.InternalServerError('Error while updating appointment.', {
                         expose: false
@@ -698,7 +698,11 @@ module.exports = function(Bizappointments) {
                 Bizappointments.app.models.BizServiceProviders.findOne({"where":{"bizServiceProviderId": convertObjectIdToString(businessServiceProviderId) }}).then(providerInfo=>{
 
                     if(isValidObject(providerInfo)){
-                        let includeCond=[{relation:'Appointment',scope:{where:{"isCancelled":false,"isDeleted":false},fields:["appointmentDate","appointmentStartTime","appointmentEndTime"]}}];
+                        let appointFilter = {"isCancelled":false,"isDeleted":false}; 
+                        if(!isNull(filterCriteria["specificDate"])){
+                            appointFilter["appointmentStartDateTime"] = {"gte": new Date(filterCriteria["specificDate"]+" 00:00:00"),"lte": new Date(filterCriteria["specificDate"]+" 23:59:59")   };
+                        }
+                        let includeCond=[{relation:'Appointment',scope:{where: appointFilter,fields:["appointmentDate","appointmentStartTime","appointmentEndTime"]}}];
                         //console.log(convertObjectIdToString(businessServiceProviderId));
                         //includeCond = [{relation:'Appointment'}];
                         Bizappointments.app.models.AppointmentServiceProviderRelation.find({"where":{"bizServiceProviderId": convertObjectIdToString(businessServiceProviderId) },"include":includeCond }).then(providrTimeSlots=>{
